@@ -1,0 +1,22 @@
+.
+├── android-tools
+│   ├── README.md
+│   └── spotify-fix
+├── bash
+│   └── sindhu-ubuntu
+│       └── .bashrc
+├── imwheel
+│   └── .imwheelrc
+├── neofetch
+│   └── config
+├── startup-items
+│   └── gnome-shell
+│       ├── appindicator-fix-startup-dropbox
+│       ├── fix-volume-extension-conflict
+│       └── README.md
+├── stow
+│   └── stow-all-files
+├── minchu.tree
+└── README.md
+
+8 directories, 11 files
