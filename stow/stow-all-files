@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# This is a bash utility to stow all the files in this repository to a user's home directory.
+# Version:0.0
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu {Private Repo}
+# Requirements - Bash v4.4 and above
+#              - stow, git is installed.
+# <<This is just a placeholder script.>>

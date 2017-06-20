@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# This is a bash utility to fix an extension conflict in Gnome shell.
+# Version:1.0
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu {Private Repo}
+# Requirements - Bash v4.4 and above
+#              - Gnome Shell 3.24 and above
+#              - Relevent extensions installed and enabled already.
+
+# Details:
+# If Extension shell-volume-mixer@derhofbauer and
+# sound-output-device-chooser@kgshank.net  are enabled together.
+# This will result in incorrect order of loading extensions.
+# First Sell volume mixer  which enables volumes more than 100%
+# should be loaded and then the Sound output device chooser
+# after the shell volume mixer is loaded. So to fix simply reload
+# the Sound output choser at session startup using this script.
+# https://extensions.gnome.org/extension/906/sound-output-device-chooser/
+# https://extensions.gnome.org/extension/858/volume-mixer/
+function main()
+{
+sleep 10 #wait for all extensions to load
+
+gnome-shell-extension-tool -r sound-output-device-chooser@kgshank.net
+}
+#
+main "$@"

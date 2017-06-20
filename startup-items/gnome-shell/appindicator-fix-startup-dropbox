@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# This is a bash utility to fix an extension conflict in Gnome shell.
+# Version:1.0
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu {Private Repo}
+# Requirements - Bash v4.4 and above
+#              - dropbox and nemo-dropbox or caja-dropbox or nautilus-dropbox installed.
+#              - Gnome Shell 3.24 and above
+#              - https://extensions.gnome.org/extension/615/appindicator-support/
+#              - Relevent extensions installed and enabled already.
+
+# Details:
+# This  script runs at startup because Dropbox wont integrate with Gnome panel
+# with indicator extension. So Disable the Auto start on dropbox and,
+# add this to startup.
+# REF BUG:
+# 1:https://github.com/rgcjonas/gnome-shell-extension-appindicator/issues/64
+# On re-login sometimes dropbox indicator fails to
+# respond so stop dropbox if running and start again
+
+sleep 2
+dropbox stop
+XDG_CURRENT_DESKTOP=Unity dropbox start
