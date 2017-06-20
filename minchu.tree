@@ -5,6 +5,12 @@
 ├── bash
 │   └── sindhu-ubuntu
 │       └── .bashrc
+├── dockerfiles
+│   ├── gnome-builder
+│   │   └── Dockerfile
+│   ├── ubuntu-gnome-zesty
+│   │   └── Dockerfile
+│   └── README.md
 ├── imwheel
 │   └── .imwheelrc
 ├── neofetch
@@ -16,7 +22,11 @@
 │       └── README.md
 ├── stow
 │   └── stow-all-files
+├── third-party
+│   ├── chinni
+│   │   └── kdeconnect
+│   └── README.md
 ├── minchu.tree
 └── README.md
 
-8 directories, 11 files
+13 directories, 16 files
