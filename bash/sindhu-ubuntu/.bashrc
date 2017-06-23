@@ -124,7 +124,7 @@ alias weather='curl wttr.in'
 
 #Transfer.sh relatedstuff
 ## syntax transfer file.txt
-transfer() { if [ $# -eq 0 ]; then echo "No arguments specified. Usage:\necho transfer /tmp/test.md\ncat /tmp/test.md | transfer test.md"; return 1; fi 
+transfer() { if [ $# -eq 0 ]; then echo "No arguments specified. Usage:\necho transfer /tmp/test.md\ncat /tmp/test.md | transfer test.md"; return 1; fi
 tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile ; fi; cat $tmpfile; rm -f $tmpfile; echo "";}
 
 #update wallpaper
@@ -138,16 +138,16 @@ alias fgrep='fgrep --color=auto'
 #show open ports
 alias ports='netstat -tulanp'
 
-## pass options to free ## 
+## pass options to free ##
 alias meminfo='free -m -l -t'
 
 #disk space
-alias diskinfo='df -H' 
- 
+alias diskinfo='df -H'
+
 ## Get server cpu info ##
 alias cpuinfo='lscpu'
 
-## get GPU ram on desktop / laptop## 
+## get GPU ram on desktop / laptop##
 alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 
 
@@ -179,9 +179,10 @@ alias greph='history |grep'
 
 
 #fun
-alias sindhu='echo "$(tput setaf 3)Hi $USER, How can I help?$(tput sgr0)"'
+alias sindhu='echo "$(tput setaf 3)Hi ${USER}, How can I help?$(tput sgr0)"'
 alias ilu='echo "$(tput setaf 3)Ohhh!! Love you too Hon!$(tput sgr0)"'
 alias gurr='echo "$(tput setaf 3)Oops! Did I do somrthing wrong?? Sorry!!!$(tput sgr0)"'
+
 #restart services
 alias lightdm-restart='sudo service lightdm restart'
 alias nmr='sudo service network-manager restart'
@@ -189,33 +190,68 @@ alias nmr='sudo service network-manager restart'
 #Restart imwhell
 alias updatescroll='killall imwheel && imwheel'
 
+# filter processes
+alias pfilter='ps -faux | grep'
 
+gentree()
+{
+    # Function generates directory tree from current folder
+    #ignoring .git folder with directories first.
+    # Expects: tree to be installed
+    # Arguments: Single file name
+    # Output: the output is written to file in the argument.
+
+    #check availability of tree
+    if command -v tree >&/dev/null; then
+      if [ $# -eq 0 ]; then
+        echo "No arguments specified. Usage: ${FUNCNAME[0]} <file to write tree to>"; return 2;
+      elif [ $# -gt 1 ]; then
+        echo "Invalid number of arguements. Additional arguements will be ignored. \nUsage:${FUNCNAME[0]} <file to write tree to>" ;
+      fi;
+        tree -a -I .git --dirsfirst > ${1} && printf "$(tput setaf 3)Generated tree file ${1}.$(tput sgr0)\n";
+        cat ${1};
+        return 0;
+    else
+      echo "Program tree is not installed. Please install tree.";
+      return 1;
+    fi
+}
 
 #Dotfiles
 dotfile()
 {
-    if [ $# -eq 0 ]; then 
-        echo "No arguments specified. Usage:dotfile <dir>"; return 1; 
-    elif [ $# -gt 1 ]; then 
-        echo "Invalid number of arguements. Additional arguements will be ignored  Usage:dotfile <dir>" 
-    fi; 
-        CDIR=$PWD cd $HOME/DotFiles && stow $1 && cd $CDIR && echo "$(tput setaf 3)DotFiles stowed. Reflecting config-files in $HOME/DotFiles/$1."; 
+  # Function to stow the files in a Dotfiles directory.
+  # Expects: stow to be installed, Directory Dotfiles to be present in home folder.
+  # Arguments: Directory to be stowed
+  # Output: Files in the directory are stowed.
+
+  if command -v stow >&/dev/null; then
+    if [ $# -eq 0 ]; then
+        echo "No arguments specified. Usage: ${FUNCNAME[0]} <dir-to-stow>"; return 1;
+    elif [ $# -gt 1 ]; then
+        echo "Invalid number of arguements. Additional arguements will be ignored  Usage:  ${FUNCNAME[0]} <dir-to stow>"
+    fi;
+        CDIR=$PWD cd $HOME/DotFiles && stow $1 && cd $CDIR && echo "$(tput setaf 3)DotFiles stowed. Reflecting config-files in $HOME/DotFiles/$1.";
         echo "Changes might not be reflected, till you relauch your program$(tput sgr0)";
+  else
+    echo "Program stow is not installed. Please install stow.";
+    return 1;
+  fi
 }
 #Restart services
 restart()
 {
     if [ $# -eq 0 ]; then echo "restart: Restart a service using systemd"
-    echo "Error: No arguments specified. Usage:restart <service>"; return 1; 
-    elif [ $# -gt 1 ]; then 
-        echo "Invalid number of arguements. Additional arguements will be ignored  Usage:restart <service>" 
+    echo "Error: No arguments specified. Usage:restart <service>"; return 1;
+    elif [ $# -gt 1 ]; then
+        echo "Invalid number of arguements. Additional arguements will be ignored  Usage:restart <service>"
     fi;
     if [ $UID -ne 0 ]; then
         sudo service $1 restart && echo "$(tput setaf 3)$1$(tput sgr0) Restarted"
     fi;
 }
 
-alias pfilter='ps -faux | grep' 
+
 
 #Anaconda paths
 #export PATH=/home/prasad/.anaconda3/bin:$PATH
@@ -229,9 +265,9 @@ export PATH=$HOME/Android/Sdk/build-tools/25.0.3:$PATH
 ghost()
 {
     if [ $# -eq 0 ]; then echo "Connect to Openvpn"
-    echo "Error: No arguments specified. Usage:ghost <config>"; return 1; 
-    elif [ $# -gt 1 ]; then 
-        echo "Invalid number of arguements. Additional arguements will be ignored  Usage:ghost <config>" 
+    echo "Error: No arguments specified. Usage:ghost <config>"; return 1;
+    elif [ $# -gt 1 ]; then
+        echo "Invalid number of arguements. Additional arguements will be ignored  Usage:ghost <config>"
     fi;
     if [ $UID -ne 0 ]; then
         sudo openvpn --config ~/.config/openvpn/$1.ovpn --auth-retry interact
@@ -248,9 +284,7 @@ rnm()
 
 valarie()
 {
-    
+
         cd $HOME/Projects/Git/Valarie && echo "$(tput setaf 3)Okay! Moved to $(tput sgr0)Valarie"
- 
+
 }
-
-
