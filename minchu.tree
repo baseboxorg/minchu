@@ -2,9 +2,7 @@
 ├── android-tools
 │   ├── adb-screenshot
 │   ├── phone-tool
-│   ├── PHONE-TOOL.md
-│   ├── README.md
-│   └── spotify-fix
+│   └── PHONE-TOOL.md
 ├── bash
 │   └── sindhu-ubuntu
 │       └── .bashrc
@@ -43,7 +41,7 @@
 │       └── README.md
 ├── stow
 │   ├── stow-all-files
-│   └── stow-list
+│   └── stow.list
 ├── templates
 │   ├── LateX Report.tex
 │   └── Shell Script
@@ -56,4 +54,4 @@
 ├── minchu.tree
 └── README.md
 
-19 directories, 37 files
+19 directories, 35 files

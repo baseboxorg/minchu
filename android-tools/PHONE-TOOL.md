@@ -1,6 +1,5 @@
-## A Simple helper script to install, backup
+## A Simple helper script to install, backup, restore android apps/appdata.
 ---
-This tool uses adb to enable tablet mode on Spotify.
 ### Requirements
 * Bash v4.4 and above
 * Android Jellybean and above.
@@ -14,9 +13,6 @@ but don't enable adb on multiple devicees.
 * *Note*:  Even though I have checked backup functions,
 I have not verified the restore operations with backups created using this script.
 - Have common sense.
----
-####  <center>Do not push to Github Publc branch</center>
----
 
 ### How to Use
 * Make sure that script is executable.
