@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+SCRIPT=ADB-Screenshot
+printf "\n$(tput setaf 3)Hello! \nI am "$SCRIPT"!\n \n$(tput setaf 6)Running on $(uname -n) as $USER $(tput sgr 0)\n"
+#define default Dirctory
+SCREENSHOT_PATH=$HOME/Phone/Screenshots/adb-screenshot-script-outputs
+mkdir -p  $SCREENSHOT_PATH
+OVRRIDE_RATE_FLAG=false
+#default interval
+interval_time=5
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -t | --time )           shift
+                                interval_time=$1
+                                ;;
+        -o | --output )         shift
+                                SCREENSHOT_PATH=$1
+                                ;;
+        -c | --count )          shift
+                                COUNT_LIMIT_FLAG='true';
+                                COUNT_LIMIT="$1"
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+usage()
+{
+    printf "Usage: %s: [-t interval-value-in-seconds] [-o absolute-output-path] [-c number-of-screenshots -f <to overrride interval limits>] \n"
+}
+
+printf "\n$(tput setaf 3)Capturing screenshots approximately every $interval_time seconds on $DEVICE_NAME - $DEVICE_SERIAL $(tput sgr 0)\n"
+printf "\n$(tput setaf 3)Setting a very low value might cause dropped frames or crash. Dont tell me that I did not warn you!$(tput sgr 0)\n"
+#Wait for adb device
+adb wait-for-device
+
+#Get device name
+DEVICE_NAME=$(adb shell getprop ro.product.model)
+DEVICE_SERIAL=$(adb shell getprop ro.serialno)
+#avoid edge cases for bandwidth and performance limit 4 screenshots every second
+# On avg on FHD device a png weighs 2.5MB = 10 MBps bandwidth + overhead so limit it to 4 screencaptures per second
+
+echo ++++++++++++++++++++++++++++++++++++++++++
+echo Press CTRL+C to stop.
+count=1
+while true
+do
+{
+    echo "PATH:$FILE_PATH"
+    #Date stamp
+    DATE=`date +%Y-%m-%d:%H:%M:%S`
+    FILE_PATH=$SCREENSHOT_PATH
+    FILE_NAME=$DEVICE_NAME-$DATE-$count.png
+    adb exec-out screencap -p > "$FILE_PATH/$FILE_NAME";
+    printf "\n$(tput setaf 6)Captured Screenshot $count as: $(tput sgr 0)$FILE_NAME\n";
+    #sleep $1
+    if $COUNT_LIMIT_FLAG; then
+        {
+            if [[ $count -eq $COUNT_LIMIT ]]; then
+                printf "\n$(tput setaf 6)Saved total of $count Screenshots in "$FILE_PATH".$(tput sgr 0)\n";
+                exit 0;
+            fi;
+        }
+    fi
+    count=$((count+1));
+    sleep $interval_time;
+}
+done

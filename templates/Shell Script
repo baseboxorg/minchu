@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# This is a bash script to <>
+# Version:1.0
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: <GIT URL> {Private Repo}
+# Requirements - Bash v4.4 and above
+#              -
+
+SCRIPT=`basename "$0"`
+YELLOW=$(tput setaf 3)
+BLUE=$(tput setaf 6)
+RED=$(tput setaf 1)
+NC=$(tput sgr 0)
+WIDTH=$(tput cols)
+
+function usage()
+{
+#Prints out help menu
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  echo "Usage: ${YELLOW}${SCRIPT}${NC}\
+   [options]
+  [-b --build]     [Build gnome-builder docker image]
+  [-r --run]       [Run docker image]
+  [-h --help]      [Display this message]"
+  printf "\nNotice any bugs? Please report it.\
+  You are welcome to create a pull request on Github, if you can make it better in any way!"
+  printf "\n${BLUE}<repo url or email>${NC} [Repo is Private]\n";
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+}
+function main()
+{
+      #check if no args
+      if [ $# -eq 0 ]; then
+              printf "\n${BLUE}No arguments found. See usage below.${NC}\n"
+              usage;
+      		    exit 1;
+      fi;
+
+      # Process command line arguments.
+      while [ "$1" != "" ]; do
+          case ${1} in
+              -b | --build )          function
+                                      shift;
+                                      ;;
+              -r | --run )            function;
+                                      exit 0
+                                      ;;
+              -h |--h )               usage;
+                                      exit 0
+                                      ;;
+              * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
+                                      usage;
+                                      exit 1
+                                      ;;
+          esac
+      	shift
+      done
+    }
+    #
+    main "$@"

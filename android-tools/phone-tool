@@ -1,0 +1,413 @@
+#!/usr/bin/env bash
+
+# This is a bash utility to help install, backup, restore app data on ur phone.
+# Version:2.4
+# Author: Prasad Tengse
+# Licence: GPLv3
+# Github Repository: https://github.com/tprasadtp/<repo-name>
+# Requirements - Bash v4.4 and above
+#              - Android Jellybean and above.
+#              - latest version of adb and fastboot installed properly and are in your $PATH.
+#              - udev rules are properly set for your device/manufacturer.
+#              - ADB debugging enabled and your pc is trusted. (duh!)
+#              - Assumes that only one adb device is connected to the PC. Which holds true most of the time.
+#                Its okay if you have multiple devices connected (including emulators),
+#                but dont enable adb on multiple devicees.
+#              - Windows Subsystem for Linux is untested and un-verified.
+#              - NOTE: Even though I have checked backup functions,
+#                I have not verified the restore operations with backups screated using this script.
+#              - Have common sense.
+#
+# ------------------------------------------------------------------------------
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Changelogs~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# v1.0      - Batch install, grant permissions
+# v2.0      - Major rewrite, Command line arguments, check device connections, modularize components.
+# v2.1      - Backup and restore functions, Wait for device to be connected if its not connected.
+# v2.2      - OTA sideload, device info, Make variables suck less and tidy up code here and there.
+# v2.3      - Simplified and streamlined granting permissions by modifying set_permissions_cmd,
+#             to perform app checks and removed redundant functions.
+# v2.4      - Fixs  variables in device check function, Fix several typos.
+#             Added betterbatterystats playstore edition
+#           - Ability to see version info for script. {Just to keep track of it}
+
+# TODO
+# 1 [-]   - Make certain arguments optional using getopt [OTA] [APK, BACKUP DIRECTORY]
+#           It makes things more complex/forces use of external tools/some non standard functions
+#           makes drop certain features (--long args). {WONTFIX} 
+# 2 [ ]   - Prioritize --ota command so that it will igonre all the other flags are arguments.
+#           There are several reasons for this. Because it leaves android and reboots to recovery,
+#           Might require PIN on Startup, unpredictable state of the device upon reboot,
+#           adb wait-for-device not available, might require manual reboot etc.
+#          Moreover, its easy to automate it if necessary, with a secondary script wih two lines of code.
+# 3 [ ]   - Better parse the commands (allow soft fails)
+# 4 [ ]   - Individual app backups/restore
+# 5 [ ]   - Factory Image restore option [fastboot required]
+# 6 [ ]   - Allow packages to be downgraded
+# 7 [ ]   - Make it work reliably via TCP (Adb over Network)
+# ------------------------------------------------------------------------------
+
+#Variables
+
+DATE=`date +%Y-%m-%d:%H:%M:%S`
+SCRIPT=`basename "$0"`
+VERSION="2.4 Beta"
+
+#Package names
+GREENIFY=com.oasisfeng.greenify
+MONOCHROME=com.suyashsrijan.lowbatterymonochrome
+WAKELOCK_DETECTOR=com.uzumapps.wakelockdetector
+GSAM_BATTERY=com.gsamlabs.bbm
+GSAM_BATTERY_PRO=com.gsamlabs.bbm.pro
+BETTER_BATTERY_STATS=com.asksven.betterbatterystats_xdaedition
+BETTER_BATTERY_STATS_NXDA=com.asksven.betterbatterystats
+FORCE_DOZE=com.suyashsrijan.forcedoze
+SYSTEMUI_TUNER=xyz.paphonb.systemuituner
+
+
+#Android Permissions
+PERMISSION_BATTERY_STATS=android.permission.BATTERY_STATS
+PERMISSION_DUMP=android.permission.DUMP
+PERMISSION_LOGS=android.permission.READ_LOGS
+PERMISSION_SECURE_SETTINGS=android.permission.WRITE_SECURE_SETTINGS
+
+#COLORS and Data for Printf
+ORANGE=$(tput setaf 9)
+YELLOW=$(tput setaf 3)
+DEEP_BLUE=$(tput setaf 4)
+BLUE=$(tput setaf 6)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 46)
+PINK2=$(tput setaf 9)
+NC=$(tput sgr 0)
+WIDTH=$(tput cols)
+
+function line_fill()
+{
+  # Function simply draws a line accross width of the terminal for a given color
+  # Input: Variable defining color in format $(tput setaf <number)
+  # If input argument is empty it reverts to a default color of Yellow.
+  if [ $# -eq 0 ]; then
+    local fill_color=${YELLOW}
+  else
+    local fill_color=${1}
+  fi
+  printf "${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+}
+
+#Functions
+function usage()
+{
+#Prints out help menu
+
+echo "Usage: ${YELLOW}${SCRIPT}${NC}\
+    [options]
+  [-a --apk]         [Batch install all the apk files found in current folder]
+  [-i --info]        [Check if Device is connected and if yes, give its details and exit]
+  [-p --permissions] [Grant special permissions via adb for cetrain apps]
+  [-r --restore]     [Restore app data in .ab files in current folder]
+  [-b --backup]      [Backup app-data]
+  [-o --ota]         [Sideload OTA ZIP and exit]
+  [-h --help]        [Display this message]
+  [-v --version]     [Display script verion and exit]"
+printf "\nNotice any bugs? Please report it. \
+You are welcome to create a pull request on Github, if you can make it better in any way!"
+printf "\n${BLUE}https://github.com/tprasadtp/minchu${NC}\n";
+#printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+line_fill;
+}
+
+function display_version()
+{
+  #printf "${BLUE}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /';
+  line_fill "${BLUE}"
+  printf "%+11s ${YELLOW} ${SCRIPT} ${NC}\n%+11s ${YELLOW} ${VERSION} ${NC}\n" "Executable:" "Version:";
+  #printf "${BLUE}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /';
+  line_fill "${BLUE}"
+}
+
+
+function check_if_installed()
+{
+  #Function checks if the apps is installed on the device.
+  #Input arguments : <package name>  eg. com.spotify.music for Spotify
+  #Returns: Sets a global boolean bool_is_installed <true/false>
+  bool_is_installed=false #reset Variable
+	if [[ $(adb shell pm list packages | grep -Fx package:"${1}") ]]; then
+    		printf "\n%-50s: %-15s" "${1}" "INSTALLED"
+		bool_is_installed=true
+	else
+    		printf "\n%-50s: %-15s" "${1}" "NOT FOUND"
+		bool_is_installed=false
+
+	fi
+}
+
+
+function device_init()
+{
+  #Function that waits for adb and shouts what is connected
+  #Input:None Output:Device details if connected
+  printf "\n${BLUE}Waiting for Device...${NC}"
+	adb wait-for-device
+	local DEVICE_NAME=$(adb shell getprop ro.product.model)
+	local DEVICE_SERIAL=$(adb shell getprop ro.serialno)
+	printf "\n${DEVICE_NAME}:${DEVICE_SERIAL} is Connected!\n"
+  #printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+}
+
+
+function device_check()
+{
+  #Function to check if device is connected and get its detsils if connected
+  #Input: None
+  #Output: Device name, model, serial number and other details
+  #Expects: single adb device or none to be connected.
+  local NOT_CONNECTED="List of devices attached"
+  local ADB_FOUND=`adb devices | tail -2 | head -1 | cut -f 1 | sed 's/ *$//g'`
+  printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+  if [[ ${ADB_FOUND} == ${NOT_CONNECTED} ]]; then
+    printf "\nNo Android Devices/Emulators found. Have you enabled ADB on your device?\n"
+    #printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    line_fill;
+    return 1
+  else
+    local DEVICE_NAME=$(adb shell getprop ro.product.model)
+    printf "${YELLOW}Properties for connected ${DEVICE_NAME}:\n${NC}"
+    adb shell getprop | grep "model\|version.sdk\|manufacturer\|hardware\|platform\|revision\|serialno\|product.name\|brand\|bootloader\|ro.vendor.build.fingerprint\|ro.vendor.build.date\|sys.oem_unlock_allowed"
+    #printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    line_fill
+    return 0
+  fi
+}
+
+function restore_app_data()
+{
+  #Function to restore app dat in .ab files
+  #Input: None
+  #Expects: adb backup file(s) with .ab extension to be in current directory.
+  printf "\nYou need to manually accept the prompt on device and enter the encryption password if any for it to work.\n"
+  printf "\n${BLUE}Restoring ADB data...${NC}"
+  #count_files=$(ls -l | grep -v ^d | wc -l) #parsing LS is not adviced So dropping it.
+
+  #count .ab adb backup files in the current directory.
+  #https://askubuntu.com/questions/454564/count-total-number-of-files-in-particular-directory-with-specific-extension
+  local count_files=$(find -maxdepth 1 -type f -name "*.ab" -exec printf x \; | wc -c)
+  #count_files=`expr $count_files - 1`
+  printf "\n${DEEP_BLUE}$count_files ${NC}adb backup files Found."
+
+  if [[ $count_files = "0" ]]; then
+    printf "\n${YELLOW}No backup files found.\n${NC}"
+    #printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    line_fill;
+    return 1;
+  fi
+
+  device_init;
+
+  local index=1
+  for file in *.ab;
+  do
+     printf "\nRestoring app data %d : ${BLUE}%s${NC}\n" "$index" "${file}"
+     adb wait-for-device
+     adb restore ${file}
+     index=`expr $index + 1`
+  done
+  #printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+  return 0;
+
+}
+
+
+function apk_batch_install()
+{
+  #This functions installs apks found in current directory no arguments are accepted.
+  #Expects: APK files are in current directory.
+
+	printf "\n${BLUE}Batch Installing APKs...${NC}"
+	local count_files=$(find -maxdepth 1 -type f -name "*.apk" -exec printf x \; | wc -c)
+	printf "\n${BLUE}$count_files${NC} APK files Found"
+
+  if [[ $count_files = "0" ]]; then
+    printf "\n${YELLOW}No APK files found.\n${NC}"
+    #printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    line_fill;
+    return 1;
+  fi
+
+  #Check if device is connected.
+	device_init;
+
+	local index=1
+	for file in *.apk;
+	do
+		printf "\nInstalling APK $index : ${BLUE}${file}${NC}: "
+		adb wait-for-device
+		adb install -r "${file}"
+		index=`expr $index + 1`
+	done
+	unset index count_files
+  #printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+  return 0;
+}
+
+
+function set_permissions_cmd()
+{
+	#Function Accepts argument 1 as package name and argument 2 the APP_NAME to be displayed,
+  #and further arguments as permissions which are variables,
+  #defined or explicitly mentioned package names or standard android permissions and
+  #grants them via adb.
+  #Example: set_permissions_cmd ${GREENIFY} "Greenify" ${PERMISSION_DUMP} ${PERMISSION_LOGS}.
+
+  local permissions_arg
+  local PACKAGE_NAME="${1}"
+  local APP_NAME="${2}"
+  shift 2;
+  check_if_installed ${PACKAGE_NAME}
+  if [[ "$bool_is_installed" == "true" ]]
+      then
+      printf "\n%-50s: %-30s" "Granting Permissions to" "${APP_NAME}"
+      for permissions_arg in "$@"
+        do
+              #printf "\nGranting %s" "${permissions_arg}" #DEBUG
+              adb -d shell pm grant ${PACKAGE_NAME} ${permissions_arg}
+      done
+  fi
+  unset bool_is_installed;
+
+}
+
+
+function grant_permissions_to_apps()
+{
+  printf "\n${YELLOW}Granting Special Permissions to apps...${NC}\n"
+  #Check if device is connected.
+  device_init;
+  #Function calls to set_permissions_cmd to grand permissions to required arguments.
+  #Arguments: None Output: None.
+  #Just a wrapper function.
+  set_permissions_cmd ${GREENIFY} "Greenify" ${PERMISSION_LOGS} ${PERMISSION_DUMP} ${PERMISSION_SECURE_SETTINGS};
+  set_permissions_cmd ${MONOCHROME} "Monochrome" ${PERMISSION_SECURE_SETTINGS};
+  set_permissions_cmd ${GSAM_BATTERY} "Gsam_Battery Monitor" ${PERMISSION_BATTERY_STATS};
+  set_permissions_cmd ${GSAM_BATTERY_PRO} "Gsam Battery Monitor Pro" ${PERMISSION_BATTERY_STATS};
+  set_permissions_cmd ${BETTER_BATTERY_STATS} "Better Battery Stats (XDA)" ${PERMISSION_BATTERY_STATS};
+  set_permissions_cmd ${BETTER_BATTERY_STATS_NXDA} "Better Battery Stats (Play Store)" ${PERMISSION_BATTERY_STATS};
+  set_permissions_cmd ${FORCE_DOZE} "Force Doze" ${PERMISSION_DUMP} ${PERMISSION_SECURE_SETTINGS};
+  set_permissions_cmd ${SYSTEMUI_TUNER} "System UI Tuner" ${PERMISSION_SECURE_SETTINGS};
+  #printf "\n${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+  return 0;
+}
+
+
+
+
+function backup_all()
+{
+  #Function to backup all app data, apks.
+  #Expects: Nothing but disk space and a device.
+  #check if device is connected.
+	device_init
+
+  printf "\n${YELLOW}Backing up App data, APKs in current directory...${NC}\n"
+	adb backup -apk -all -nosystem -f "ADB-BACKUP-${DEVICE_NAME}-${DATE}.ab"
+  #printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+  return 0;
+}
+
+
+function ota_sideload()
+{
+  #Function to update the device using latest OTA ZIP via adb sideload.
+  #Expects: Single valid ".zip" file for OTA in current directory.
+  #Expects: Android device is already compatible with the OTA ZIP.
+  #Expects: User to manually enter sideload mode after rebooting to recovery.
+  #Expects: User to reboot manually after sideloading.
+  #Input: [None] [In future Optional argument OTA ZIP Filename]
+
+  #printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+  printf "\n${NC}Make sure that zip file and only the right zip file is in same folder as this script or your current folder and it doesn't have any additional zip files."
+  #check if a single ota file is present
+  local count_files=$(find -maxdepth 1 -type f -name "*.zip" -exec printf x \; | wc -c)
+  if [[ "$count_files" -gt "1" ]]; then
+    printf "\n${YELLOW}Multiple Zip files found. Cannot continue with sideload operation.\n${NC}"
+    return 1;
+  elif [[ $count_files = "0" ]]; then
+    printf "\n${YELLOW}No Zip file found. Cannot proceed with sideload operation.\n${NC}"
+    return 1;
+  else
+    device_init;
+    printf "\n${YELLOW}Rebooting to sideload mode...\n${NC}"
+    adb reboot recovery
+    sleep 10
+    printf "\nPlease Enter sideload mode on your device.\n"
+    while true; do
+        read -p "Have you entered sideload mode? Press N to Exit. (Y/N)" yn
+        case $yn in
+            [Yy]* ) adb sideload *.zip && printf "\nSideloaded OTA ZIP.";break;;
+            [Nn]* ) break;;
+        esac
+    done
+    printf "${YELLOW}\nPlease Reboot your device.\n"
+  fi
+  #printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  line_fill;
+  return 0;
+}
+
+
+function main()
+{
+  #check if no args
+  if [ $# -eq 0 ]; then
+          printf "\n${BLUE}No arguments found. See usage below.\n${NC}"
+          line_fill;
+          usage;
+  		    exit 1;
+  fi;
+
+  #welcome;
+  # Process command line arguments.
+  while [ "$1" != "" ]; do
+      case ${1} in
+          -p | --permissions )    grant_permissions_to_apps;
+                                  ;;
+          -r | --restore )        restore_app_data;
+                                  ;;
+  		    -a | --apk )  			    apk_batch_install;
+                                  ;;
+          -i | --info )  			    device_check;
+                                  exit 0
+                                  ;;
+  		    -b | --backup )			    backup_all;
+  								                ;;
+          -o | --ota )            ota_sideload;
+                                  exit 0
+                                  ;;
+          -h |--help )            usage;
+                                  exit 0
+                                  ;;
+          -v | --version)         display_version;
+                                  exit 0
+                                  ;;
+  		   -bhairavi | --bhairavi)  printf "${DEEP_BLUE}\nHi Bhairavi! Nice to meet you! I was written on Sindhu and she said Hello!${NC}\n";
+  								                usage;
+                                  exit 12
+                                  ;;
+          * )                     printf "\n${BLUE}Invalid argument(s). See usage below.\n${NC}"
+                                  usage;
+                                  exit 1
+                                  ;;
+      esac
+  	shift
+  done
+}
+#
+main "$@"

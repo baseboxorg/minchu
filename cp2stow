@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+
+# This is a bash utility to copy all the config files and scripts in this
+# repository to a directory containing all dotfiles and generate a stowing script.
+# Version:0.1
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu
+# Requirements - Bash v4.4 and above
+#              - stow, git,rsync is installed.
+#              - Git repository is cloned and the script is run from the same
+#                folder as in project. aka /stow.
+
+# Assumes the directory structure as described in minchu.tree
+
+#Constants
+DATE=`date +%Y-%m-%d:%H:%M:%S`
+SCRIPT=`basename "$0"`
+YELLOW=$(tput setaf 3)
+BLUE=$(tput setaf 6)
+RED=$(tput setaf 1)
+NC=$(tput sgr 0)
+WIDTH=$(tput cols)
+VERSION="0.1 βeta"
+spacing_string="%+11s"
+#default config-files directory
+DOTFILE_DIR="DotfilesTest"
+#default bashrc directory
+bashrc_dir="sindhu-ubuntu"
+ARG="$@"
+CDIR=$PWD
+
+function usage()
+{
+  #Prints out help menu
+line_fill;
+cat <<EOF
+Usage: ${YELLOW}${SCRIPT}${NC} [options]
+[-c --copy]      [Stows all the files in ${DOTFILE_DIR}]
+[-h --help]      [Display this help message]
+[-x --clean]     [Cleanup old config/Renames]
+[-v --version]   [Display version info]
+All argumets in <> are optional and refers to a directory under ${HOME},
+if not provided, defualts to "Dotfiles".
+
+Notice any bugs? Please report it.
+You are welcome to create a pull request on Github, if you can make it better in any way!
+${BLUE}https://github.com/tprasadtp/minchu${NC}
+EOF
+line_fill;
+}
+
+
+function line_fill()
+{
+  # Function simply draws a line accross width of the terminal for a given color
+  # Input: Variable defining color in format $(tput setaf <number)
+  # If input argument is empty it reverts to a default color of Yellow.
+  if [ $# -eq 0 ]; then
+    local fill_color=${YELLOW}
+  else
+    local fill_color=${1}
+  fi
+  printf "${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e "s/ /-/g" -e "s/-@/ /" -e "s/@-/ /"
+}
+
+function display_version()
+{
+  line_fill "${BLUE}";
+  printf "${spacing_string} ${YELLOW} ${SCRIPT} ${NC}\n${spacing_string} ${YELLOW} ${VERSION} ${NC}\n" "Executable:" "Version:";
+  line_fill "${BLUE}";
+}
+
+
+function clean_config()
+{
+  # Function Renames the original dotfile directory to .<some-random-number>
+  # deleting is avoided because it is not necessary
+  cd $HOME
+  if [ -d ${HOME}/${DOTFILE_DIR} ]; then
+      local directory_suffix=$((1 + RANDOM % 1000));
+      mv "${DOTFILE_DIR}" "${DOTFILE_DIR}.${directory_suffix}";
+      printf "%-10s ${YELLOW} ${DOTFILE_DIR} ${NC}\n%-10s ${YELLOW} ${DOTFILE_DIR}-${directory_suffix} ${NC}\n" "Moved:" "To:";
+      line_fill;
+      return $?
+  else
+      printf "\n${DOTFILE_DIR} is not present under ${HOME}\n"
+      line_fill;
+      return 1
+    fi
+}
+
+
+
+
+function copy_files()
+{
+  # Function to copy files to stowing directory.
+  # Expects git repo to be cloned already.
+  # Expects to be run from its directory in project structure minchu/stow
+  # Expects filenames/directory structure has not changed than repo.
+  # Ecxpects rsync to be installed
+  # Yes I know I am a very rigid script, but Hey! I work fine!
+  # Why not copy all files/replicate the same structure in repo? or use cp?
+  # It makes things not so neat to look for, makes it specific to stowing,
+  # conflicts with README.mds etc. (cp)
+  if command -v rsync >&/dev/null; then
+    printf "${BLUE}Copying files to ${DOTFILE_DIR}${NC}\n"
+    line_fill;
+
+    #-------------------------- android-tools -----------------------------------#
+    destination=${HOME}/${DOTFILE_DIR}/android-tools/.local/bin/
+    mkdir -p ${destination}
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' android-tools/ ${destination}
+
+    #-------------------------- dockerfiles -------------------------------------#
+    destination="${HOME}/"${DOTFILE_DIR}"/dockerfiles/.local/bin/"
+    mkdir -p "${destination}"
+    rsync -avr --recursive --exclude='*.md*' --exclude='*.MD*' dockerfiles/ ${destination}
+
+    #-------------------------- startup-items -----------------------------------#
+    destination="${HOME}/${DOTFILE_DIR}/startup-items/.local/bin/"
+    mkdir -p "${destination}"
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' startup-items/gnome-shell/ "${destination}"
+
+    #----------------------------- neofetch -------------------------------------#
+    destination="${HOME}/${DOTFILE_DIR}/neofetch/.config/neofetch"
+    mkdir -p "${destination}"
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' neofetch/ "${destination}"
+
+    #------------------------------ imwheel -------------------------------------#
+    destination="${HOME}/${DOTFILE_DIR}/imwheel"
+    mkdir -p "${destination}"
+    rsync -Eav --recursive  --exclude='*.md*' --exclude='*.MD*' imwheel/ "${destination}"
+
+    #----------------------------- bashrc ---------------------------------------#
+    destination="${HOME}/${DOTFILE_DIR}/bash-${bashrc_dir}"
+    mkdir -p "${destination}"
+    rsync -Eav --recursive  --exclude='*.md*' --exclude='*.MD*' bash/${bashrc_dir}/ "${destination}"
+
+    #-------------------------- image-processing --------------------------------#
+    destination="${HOME}/${DOTFILE_DIR}/image-processing/.local/bin"
+    mkdir -p "${destination}"
+    rsync -Eav --recursive  --exclude='*.md*' --exclude='*.MD*' image-processing/ "${destination}"
+
+    #-------------------------------- git ---------------------------------------#
+    destination=${HOME}/${DOTFILE_DIR}/git
+    mkdir -p "${destination}"
+    rsync -Eav --recursive  --exclude='*.md*' --exclude='*.MD*' git/ "${destination}"
+
+    #------------------------------ stow-script ---------------------------------#
+    destination=${HOME}/${DOTFILE_DIR}
+    mkdir -p "${destination}"
+    rsync -Eav --recursive  --exclude='*.md*' --exclude='*.MD*' stow/ "${destination}"
+    gen_script;
+
+    line_fill
+    printf "\n${BLUE}Files copied to ${DOTFILE_DIR}. If you saw any errors, please retry.${NC}\n"
+    return 0;
+  else
+    printf "\nProgram rsync is not installed. Please install rsync.\nThis script requires rsync\n";
+    return 1;
+  fi
+}
+
+function gen_script()
+{
+
+gen_script_file=$HOME/${DOTFILE_DIR}/stow-all-files
+# Writes to stow-all-files regarding its validity and metadata of the script
+cat <<EOM >> ${gen_script_file}
+gen_source=${SCRIPT}
+gen_date=${DATE}
+spacing_string="%+17s"
+main \$@
+EOM
+chmod +x ${gen_script_file}
+}
+
+
+
+function main()
+{
+      #check if no args
+      if [ $# -eq 0 ]; then
+              printf "\n${BLUE}No arguments found. See usage below.${NC}\n"
+              usage;
+      		    exit 1;
+      fi;
+
+      # Process command line arguments.
+      while [ "$1" != "" ]; do
+          case ${1} in
+              -c | --copy )           copy_files;
+                                      exit $?
+                                      ;;
+              -h | --help )           usage;
+                                      exit $?
+                                      ;;
+              -x | --clean )          clean_config;
+                                      exit $?
+                                      ;;
+              -v | --version)         display_version;
+                                      exit 0
+                                      ;;
+              * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
+                                      usage;
+                                      exit 1
+                                      ;;
+          esac
+      	shift
+      done
+  }
+#
+main "$@"

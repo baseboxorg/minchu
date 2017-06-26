@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+  # This is a bash script to launch google-chrome using docker helper core
+  # Version:1.0
+  # Author: Prasad Tengse
+  # Licence: MIT
+  # Github Repository: https://github.com/tprasadtp/minchu
+  # Requirements - Bash v4.4 and above
+  #              - docker installed and you can run without sudo.
+  #              - docker-helper-core to be present in current directory
+  #              - Change the volumes to be mounted appropriately.
+  #              - docker-ce v17 and a above [lower versions might work but not tested.]
+  #              - Tested on 17.04 zesty 64 bit Ubuntu GNOME
+  #              - Kitematic is  recomended (Docker toolbox)
+
+  SCRIPT=`basename "$0"`
+
+  #defining current directory
+  dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+
+  #Define variables required by docker-helper-core
+  container_name="chrome" #name of the container to be run.
+  # Use _ in container names. use - in images and directories
+  docker_folder="chrome" #Folder in which Dockerfile is present
+  docker_image="chrome" #Name of the docker image
+  image_tag="latest" #tag of the docker image
+  HELPER_VERSION="1.0 βeta"
+
+  #----- Import docker-helper-core -----#
+  if [ -e docker-helper-core ]
+    then
+      . $dir/docker-helper-core
+  else
+    printf "Cannot find docker-helper-core in current directory.\nHelper script cannot continue!!\n"
+    exit 1;
+  fi
+
+  #------------------------------------#
+
+  function  dockerx_chrome()
+  {
+    # Wrapper for docker command to launch gnome builder
+    # Input: none
+    # Output: Runs app in docker
+    # Expects: Docker ti be installed and can run it wothout sudo
+
+    docker run -d \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        -e DISPLAY=unix$DISPLAY \
+        -v $HOME/Downloads:/chrome/Downloads \
+        -v $HOME/dockervolume:/data \
+        -v /dev/shm:/dev/shm \
+        -v /etc/hosts:/etc/hosts \
+        --device /dev/snd \
+        --device /dev/dri \
+        --device /dev/video0 \
+        --group-add audio \
+        --cap-add=SYS_ADMIN\
+        --group-add video \
+    	--name ${container_name} \
+    ${docker_image}:${image_tag} --user-data-dir=/data --force-device-scale-factor=1 \
+    --proxy-server="$proxy" --host-resolver-rules="$map" "$args"
+  }
+
+  # Call main function in docker-helper-core to process arguments.
+  main "$@"

@@ -4,7 +4,7 @@
 # Version:1.0
 # Author: Prasad Tengse
 # Licence: MIT
-# Github Repository: https://github.com/tprasadtp/minchu {Private Repo}
+# Github Repository: https://github.com/tprasadtp/minchu 
 # Requirements - Bash v4.4 and above
 #              - Using either Gnome/Cinnamon/Gnome-shell/MATE
 #              - Ubuntu 16.04 or above only.
@@ -28,7 +28,7 @@ function usage()
   [-h --help]      [Display this message]"
   printf "\nNotice any bugs? Please report it.\
   You are welcome to create a pull request on Github, if you can make it better in any way!"
-  printf "\n${BLUE}https://github.com/tprasadtp/minchu${NC} [Repo is Private]\n";
+  printf "\n${BLUE}https://github.com/tprasadtp/minchu${NC}\n";
   printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
 }
 

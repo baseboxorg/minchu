@@ -1,18 +1,33 @@
 .
 ├── android-tools
+│   ├── adb-screenshot
+│   ├── phone-tool
+│   ├── PHONE-TOOL.md
 │   ├── README.md
 │   └── spotify-fix
 ├── bash
 │   └── sindhu-ubuntu
 │       └── .bashrc
 ├── dockerfiles
+│   ├── chrome
+│   │   ├── chrome-font.conf
+│   │   └── Dockerfile
 │   ├── eclipse
 │   │   └── Dockerfile
 │   ├── gnome-builder
 │   │   └── Dockerfile
 │   ├── ubuntu-gnome-zesty
 │   │   └── Dockerfile
+│   ├── docker-chrome
 │   ├── docker-gnome-builder
+│   ├── docker-gnome-legacy
+│   ├── docker-helper-core
+│   └── README.md
+├── git
+│   ├── .gitconfig
+│   └── .gitignore_global
+├── image-processing
+│   ├── denoise-raw-stack
 │   └── README.md
 ├── imwheel
 │   └── .imwheelrc
@@ -25,11 +40,17 @@
 │       └── README.md
 ├── stow
 │   └── stow-all-files
+├── templates
+│   ├── LateX Report.tex
+│   └── Shell Script
 ├── third-party
 │   ├── chinni
 │   │   └── kdeconnect
 │   └── README.md
+├── cp2stow
+├── cp2stow.withvalidation
+├── .gitignore
 ├── minchu.tree
 └── README.md
 
-14 directories, 18 files
+18 directories, 35 files

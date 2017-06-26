@@ -260,6 +260,9 @@ export PATH=~/.local/bin:$PATH
 export PATH=$HOME/Android/Sdk/platform-tools:$PATH
 export PATH=$HOME/Android/Sdk/build-tools/25.0.3:$PATH
 
+#Add GPG
+export GPG_TTY=$(tty)
+
 #sudo openvpn --config /path/to/config.ovpn --auth-retry interact
 
 ghost()
