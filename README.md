@@ -1,6 +1,6 @@
 ## A collection of bash/python utilities, config files and dockerfiles
 ---
-This is a **Private repository** for collection of bash utilities,scripts and config files I use during my work-flow.
+This is a repository for collection of bash utilities,scripts and config files I use during my work-flow.
 The Repository tree is organized into modules.
 
 ` Github URL: https://github.com/tprasadtp/minchu `
@@ -11,7 +11,8 @@ The Repository tree is organized into modules.
 ├── android-tools
 │   ├── adb-screenshot
 │   ├── phone-tool
-│   └── PHONE-TOOL.md
+│   ├── PHONE-TOOL.md
+│   └── README.md
 ├── bash
 │   └── sindhu-ubuntu
 │       └── .bashrc
@@ -35,6 +36,7 @@ The Repository tree is organized into modules.
 │   └── .gitignore_global
 ├── image-processing
 │   ├── denoise-raw-stack
+│   ├── image-lvl-optimize
 │   └── README.md
 ├── imwheel
 │   └── .imwheelrc
@@ -66,7 +68,7 @@ The Repository tree is organized into modules.
 * `android-tools` contains bash utilities to related to android development and day to day life.
 * `bash` contains custom `.bashrc` files in directories labeled by machine/user name.
 * `dockerfiles` contains docker files in sub-directories and helper scripts to launch them.
-* `git` contains custom .gitconfig, .gitignore files
+* `git` contains custom .gitconfig, .gitignore_global files
 * `image-processing` consist of several image processing scripts.
 * `imwheel` contains custom `.imwheelrc` files.
 * `neofetch` contains custom neofetch `config` files.
@@ -76,17 +78,26 @@ The Repository tree is organized into modules.
 * `templates` contains several custom template files which can be used in new file context menu especially in nautilus.
 Copy them to `~/Templates` directory and restart nautilus. `nautilus -q`
 * `cp2stow` is bash a script, which copies all the data to "Dotfiles" directory in your Home folder, with a stow script to stow all the files.
+  + To copy files to stow, run the script `./cp2stow -c`. This will copy all the files necessary to Dotfiles folder under your home directory to something line `.bashrc.old`.
+  + If you already have some files which conflict with symlinks, you must rename them as before. (eg: neofetch config file under `.local/neofetch/config`)
+  + If you have renamed your Dotfiles directory then your existing symlinks will not work and you need to delete them manually before stowing again.
+  + If it is the first time you are using this script, plase rename your existing `.bashrc` and `.gitignore_global`  files (found under Home directory) to
   + To stow them (symlink them), just run `./stow-all-files -s` from your Dotfiles directory. (cp2stow should have placed the script and a config file there.)
   + This utility uses rsync to copy the files. You need rsync (installed by default in most cases) to run this script.
-  + IF you see errors saying that it is not owned by stow then you need to manually remove the symlinks.
-  + This script `stow-all-files` uses a config file `stow.list` containing list of directories to be stowed.
+  + If you see errors saying that it is not owned by stow then you need to manually remove the symlinks.
+  + The script `stow-all-files` uses a config file `stow.list` containing list of directories to be stowed.
   + If the Dotfiles directory has been changed/renamed then you have to delete symlinks manually.[will automate it in future]
-  + IF you want to stow other directories then just add them to the file with one directory per line.
+  + If you want to stow other directories then just add them to the config file with one directory per line(directory must be present under Dotfiles).
+  + Why stow files if you may ask? Here is a wonderful article. http://brandon.invergo.net/news/2012-05-26-using-gnu-stow-to-manage-your-dotfiles.html
+
 * `minchu.tree` consists of current repository structure. In some cases it might be out of sync with project.
 * Almost every executable requires a flag to run.
 
 ### Changelogs
 
+#### _v1.5.1_
+* Updated documentation
+* Added script to optimize histogram of image (level adjustments)
 
 #### _v1.5_
 * Fixed : Typos and errors, a bug with bashrc, paths in several files.

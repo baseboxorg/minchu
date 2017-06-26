@@ -8,8 +8,8 @@
 ADB debugging enabled and your pc is trusted.
 * Assumes that only one adb device is connected to the PC. Which holds true most of the time.
 Its okay if you have multiple devices connected (including emulators),
-but don't enable adb on multiple devicees.
-* Windows Subsystem for Linux is untested and un-verified.
+but don't enable adb on multiple devices.
+* Windows Subsystem for Linux is untested and unverified.
 * *Note*:  Even though I have checked backup functions,
 I have not verified the restore operations with backups created using this script.
 - Have common sense.

@@ -26,3 +26,16 @@ Please read the comment section of each script before proceeding.
 - TIF - align images to be stacked using hugins.
 - Aligned TIF to Median Stacking using hugins.
 - Script assumes that the images can be stacked and makes no effort to remove or correct the errors in the supplied images.
+
+#### **image-lvl-optimize**
+Optimizes the image level histogram using imagemagick
+
+**Requires**
+* imagemagik
+
+**Usage**
+
+Run the script as,
+`./image-lvl-optimize [Parameters]`    
+Parameters can be files or directories containing the images.
+Eg: `./image-lvl-optimize file1.jpg file2.png` 
