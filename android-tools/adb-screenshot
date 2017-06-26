@@ -1,71 +1,171 @@
 #!/usr/bin/env bash
-SCRIPT=ADB-Screenshot
-printf "\n$(tput setaf 3)Hello! \nI am "$SCRIPT"!\n \n$(tput setaf 6)Running on $(uname -n) as $USER $(tput sgr 0)\n"
-#define default Dirctory
-SCREENSHOT_PATH=$HOME/Phone/Screenshots/adb-screenshot-script-outputs
-mkdir -p  $SCREENSHOT_PATH
-OVRRIDE_RATE_FLAG=false
-#default interval
+
+# This is a bash utility to help take screenshots on your Android device vua adb.
+# Version:2.4
+# Author: Prasad Tengse
+# Licence: GPLv3
+# Github Repository: https://github.com/tprasadtp/<repo-name>
+# Requirements - Bash v4.4 and above
+#              - Android Jellybean and above.
+#              - latest version of adb and fastboot installed properly and are in your $PATH.
+#              - udev rules are properly set for your device/manufacturer.
+#              - ADB debugging enabled and your pc is trusted. (duh!)
+#              - Assumes that only one adb device is connected to the PC. Which holds true most of the time.
+#                Its okay if you have multiple devices connected (including emulators),
+#                but dont enable adb on multiple devicees.
+#              - Windows Subsystem for Linux is untested and un-verified.
+#              - Have common sense.
+#
+#COLORS and Data for Printf
+ORANGE=$(tput setaf 9)
+YELLOW=$(tput setaf 3)
+DEEP_BLUE=$(tput setaf 4)
+BLUE=$(tput setaf 6)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 46)
+PINK2=$(tput setaf 9)
+NC=$(tput sgr 0)
+WIDTH=$(tput cols)
+
+DATE=`date +%Y-%m-%d:%H:%M:%S`
+readonly SCRIPT=`basename "$0"`
+readonly VERSION="2.0"
+SCREENSHOT_PATH=$HOME/Phone/Screenshots/screenshot-adb-outputs
+OVRRIDE_RATE_FLAG= false
 interval_time=5
+COUNT_LIMIT_FLAG= false
 
-while [ "$1" != "" ]; do
-    case $1 in
-        -t | --time )           shift
-                                interval_time=$1
-                                ;;
-        -o | --output )         shift
-                                SCREENSHOT_PATH=$1
-                                ;;
-        -c | --count )          shift
-                                COUNT_LIMIT_FLAG='true';
-                                COUNT_LIMIT="$1"
-                                ;;
-        * )                     usage
-                                exit 1
-    esac
-    shift
-done
+function line_fill()
+{
+  # Function simply draws a line accross width of the terminal for a given color
+  # Input: Variable defining color in format $(tput setaf <number)
+  # If input argument is empty it reverts to a default color of Yellow.
+  if [ $# -eq 0 ]; then
+    local fill_color=${YELLOW}
+  else
+    local fill_color=${1}
+  fi
+  printf "${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+}
 
 
+function display_version()
+{
+  line_fill "${BLUE}"
+  printf "%+11s ${YELLOW} ${SCRIPT} ${NC}\n%+11s ${YELLOW} ${VERSION} ${NC}\n" "Executable:" "Version:";
+  line_fill "${BLUE}"
+}
+
+
+function device_init()
+{
+  #Function that waits for adb and shouts what is connected
+  #Input:None Output:Device details if connected
+  printf "\n${BLUE}Waiting for Device...${NC}"
+	adb wait-for-device
+	DEVICE_NAME=$(adb shell getprop ro.product.model)
+	DEVICE_SERIAL=$(adb shell getprop ro.serialno)
+	printf "\n${DEVICE_NAME}:${DEVICE_SERIAL} is Connected!\n"
+  line_fill;
+}
+
+
+function screenshot_stream()
+{
+  # function to take screenshots regular interval-value-in-seconds
+  # Default interval_time is 5 sec, Default Path is
+  # $HOME/Phone/Screenshots/adb-screenshot-script-outputs
+  mkdir -p  ${SCREENSHOT_PATH}
+  #
+  printf "\n${YELLOW}Capturing screenshots approximately every ${interval_time} seconds on your device.\n"
+  line_fill;
+  #Wait for adb device
+  device_init
+
+  printf  "\n${YELLOW}Press CTRL+C to stop....${NC}\n"
+  count=1
+  printf "${BLUE}Screenshots are save under :${FILE_PATH}\n"
+  while true
+  do
+  {
+      #Date stamp
+      DATE=`date +%Y-%m-%d:%H:%M:%S`
+      FILE_PATH=${SCREENSHOT_PATH}
+      FILE_NAME=${DEVICE_NAME}-${DATE}-${count}.png
+      adb exec-out screencap -p > "$FILE_PATH/$FILE_NAME";
+      printf "\nCaptured Screenshot ${count} as: ${FILE_NAME}\n";
+      #sleep $1
+      if ${COUNT_LIMIT_FLAG}; then
+          {
+              if [[ $count -eq $COUNT_LIMIT ]]; then
+                  printf "\n$(tput setaf 6)Saved total of ${count} Screenshots in "${FILE_PATH}".$(tput sgr 0)\n";
+                  exit 0;
+              fi;
+          }
+      fi
+      count=$((count+1));
+      sleep ${interval_time};
+  }
+  done
+
+}
 usage()
 {
-    printf "Usage: %s: [-t interval-value-in-seconds] [-o absolute-output-path] [-c number-of-screenshots -f <to overrride interval limits>] \n"
+#Prints out help menu
+line_fill;
+cat <<EOF
+Usage: ${YELLOW}${SCRIPT}${NC} [options]
+[-t --time <int> ]      [Time interval between screenshots]
+[-o --output <path> ]   [Output path (absolute)]
+[-c --count <int> ]     [Number of screenshots to be taken]
+[-h --help]             [Display this help message]
+[-v --version]          [Display version info]
+Running without any arguments will use following default values.
+* time interval between screenshots = 5 seconds
+* Path to Captured screenshots: S$HOME/Phone/Screenshots/screenshot-adb-outputs
+* Press Ctrl+C to stop the script.
+Notice any bugs? Please report it.
+You are welcome to create a pull request on Github, if you can make it better in any way!
+${BLUE}https://github.com/tprasadtp/minchu${NC}
+EOF
+line_fill;
 }
 
-printf "\n$(tput setaf 3)Capturing screenshots approximately every $interval_time seconds on $DEVICE_NAME - $DEVICE_SERIAL $(tput sgr 0)\n"
-printf "\n$(tput setaf 3)Setting a very low value might cause dropped frames or crash. Dont tell me that I did not warn you!$(tput sgr 0)\n"
-#Wait for adb device
-adb wait-for-device
 
-#Get device name
-DEVICE_NAME=$(adb shell getprop ro.product.model)
-DEVICE_SERIAL=$(adb shell getprop ro.serialno)
-#avoid edge cases for bandwidth and performance limit 4 screenshots every second
-# On avg on FHD device a png weighs 2.5MB = 10 MBps bandwidth + overhead so limit it to 4 screencaptures per second
 
-echo ++++++++++++++++++++++++++++++++++++++++++
-echo Press CTRL+C to stop.
-count=1
-while true
-do
+function main()
 {
-    echo "PATH:$FILE_PATH"
-    #Date stamp
-    DATE=`date +%Y-%m-%d:%H:%M:%S`
-    FILE_PATH=$SCREENSHOT_PATH
-    FILE_NAME=$DEVICE_NAME-$DATE-$count.png
-    adb exec-out screencap -p > "$FILE_PATH/$FILE_NAME";
-    printf "\n$(tput setaf 6)Captured Screenshot $count as: $(tput sgr 0)$FILE_NAME\n";
-    #sleep $1
-    if $COUNT_LIMIT_FLAG; then
-        {
-            if [[ $count -eq $COUNT_LIMIT ]]; then
-                printf "\n$(tput setaf 6)Saved total of $count Screenshots in "$FILE_PATH".$(tput sgr 0)\n";
-                exit 0;
-            fi;
-        }
-    fi
-    count=$((count+1));
-    sleep $interval_time;
-}
-done
+      #check if no args
+      if [ $# -eq 0 ]; then
+              printf "\n${BLUE}No arguments found. Using default values.${NC}\n"
+      fi;
+
+      # Process command line arguments.
+      while [ "$1" != "" ]; do
+          case ${1} in
+              -t | --time )           shift
+                                      interval_time=$1
+                                      ;;
+              -o | --output )         shift
+                                      SCREENSHOT_PATH=$1
+                                      ;;
+              -c | --count )          shift
+                                      COUNT_LIMIT_FLAG='true';
+                                      COUNT_LIMIT="$1"
+                                      ;;
+              -h | --help )           usage;
+                                      exit 0
+                                      ;;
+              -v | --version)         display_version;
+                                      exit 0
+                                      ;;
+              * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
+                                      usage;
+                                      exit 1
+                                      ;;
+          esac
+      	shift
+      done
+      screenshot_stream;
+  }
+main "$@"

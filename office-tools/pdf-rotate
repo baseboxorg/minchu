@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+
+# This is a bash utility to Rotate a list of PDF documents.
+# Version:1.0
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu
+# Requirements - Bash v4.4 and above
+#							 - Depends on texlive-extra-utils
+# ------------------------------------------------------------------------------
+#  Original Author: N. Bernaerts
+# Changes from Original: Removed zenity error dialoges.
+# Keep original files instead of deleting them.
+# ------------------------------------------------------------------------------
+
+
+
+#constants
+SCRIPT=`basename "$0"`
+VERSION="1.0"
+YELLOW=$(tput setaf 3)
+BLUE=$(tput setaf 6)
+RED=$(tput setaf 1)
+NC=$(tput sgr 0)
+WIDTH=$(tput cols)
+spacing_string="%-30s"
+
+function usage()
+{
+  #Prints out help menu
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+cat <<EOF
+Usage: ${YELLOW}${SCRIPT}${NC} [parameters] <files>
+Parameters are:
+[--right]            [ Rotate 90 right ]
+[--left ]            [ Rotate 90 left ]
+[--up-down]          [ Rotate 180 (upside down) ]
+<file1> <file2> ...  [ Files to handle ]
+
+Output files are saved in the same directory as original and have -rot appended to their names.
+Notice any bugs? Please report it.
+You are welcome to create a pull request on Github, if you can make it better in any way!
+${BLUE}https://github.com/tprasadtp/minchu${NC}
+EOF
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+}
+
+
+function display_version()
+{
+  printf "${BLUE}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /';
+printf "%+11s ${YELLOW} ${SCRIPT} ${NC}\n%+11s ${YELLOW} ${VERSION} ${NC}\n" "Executable:" "Version:";
+  printf "${BLUE}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /';
+}
+
+function check_exec()
+{
+	# -------------------------------------------------------
+	# check tools availability
+	# -------------------------------------------------------
+	command -v pdf90 >/dev/null 2>&1 || { printf "${BLUE}pdf90 not found! Please install it from [texlive-extra-utils] package.${NC}\n";  exit 1; }
+	command -v pdf180 >/dev/null 2>&1 || { printf "${BLUE}pdf180 not found! Please install it from [texlive-extra-utils] package.${NC}\n"; exit 1; }
+	command -v pdf270 >/dev/null 2>&1 || { printf "${BLUE}pdf270 not found! Please install it from [texlive-extra-utils] package.${NC}\n"; exit 1; }
+}
+
+function main ()
+{
+	# -------------------------------------------------------
+	# handle arguments
+	# -------------------------------------------------------
+
+	# if no argument,
+	if [ $# -eq 0 ]; then
+					printf "\n${BLUE}No arguments found. See usage below.\n${NC}"
+					usage;
+					exit 1;
+	fi;
+
+
+	# loop to retrieve arguments
+	while test $# -gt 0
+	do
+		case "$1" in
+		"--help") usage; exit 0 ;;
+		"-v") display_version; exit 0; ;;
+		"--right") COMMAND_TOOL="pdf270"; shift; ;;
+		"--left") COMMAND_TOOL="pdf90"; shift; ;;
+		"--up-down") COMMAND_TOOL="pdf180"; shift; ;;
+		*) ARR_FILE=( "${ARR_FILE[@]}" "$1" ); shift; ;;
+		esac
+	done
+
+	check_exec;
+	# check rotation is selected
+	[ "${COMMAND_TOOL}" = "" ] && { printf "${YELLOW}Invalid Parameters. Please specify the correct Parameters${NC}\n"; usage; exit 1; }
+
+	# -------------------------------------
+	# loop thru PDF files to convert them
+	# -------------------------------------
+
+	# create temporary directory
+	TMP_DIR=$(mktemp --directory --tmpdir)
+
+	echo "${TMP_DIR}"
+
+	# loop thru files
+	for FILE in "${ARR_FILE[@]}"
+	do
+		# convert file to temporary directory
+		${COMMAND_TOOL} "${FILE}" --outfile "${TMP_DIR}"
+
+		# replace original file
+		mv --force ${TMP_DIR}/*-rotated* "${FILE}-rotated"
+	done
+
+	# remove temporary directory
+	rm --recursive "${TMP_DIR}"
+}
+
+main "$@"

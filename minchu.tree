@@ -33,13 +33,17 @@
 │   └── .imwheelrc
 ├── neofetch
 │   └── config
+├── office-tools
+│   ├── pdf-rotate
+│   └── README.md
 ├── startup-items
 │   └── gnome-shell
 │       ├── appindicator-fix-startup-dropbox
 │       ├── fix-volume-extension-conflict
 │       └── README.md
 ├── stow
-│   └── stow-all-files
+│   ├── stow-all-files
+│   └── stow-list
 ├── templates
 │   ├── LateX Report.tex
 │   └── Shell Script
@@ -48,9 +52,8 @@
 │   │   └── kdeconnect
 │   └── README.md
 ├── cp2stow
-├── cp2stow.withvalidation
 ├── .gitignore
 ├── minchu.tree
 └── README.md
 
-18 directories, 35 files
+19 directories, 37 files

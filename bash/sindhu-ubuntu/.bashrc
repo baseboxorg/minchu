@@ -177,6 +177,10 @@ alias ext='gnome-shell-extension-tool'
 alias bashrc='gedit ~/.bashrc'
 alias greph='history |grep'
 
+#Michu
+#To generate tree for repository minchu
+alias minchu-tree='tree -a -I .git -I ".git|untrackedfiles" --dirsfirst >minchu.tree'
+
 
 #fun
 alias sindhu='echo "$(tput setaf 3)Hi ${USER}, How can I help?$(tput sgr0)"'

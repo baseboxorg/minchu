@@ -24,7 +24,7 @@ WIDTH=$(tput cols)
 VERSION="0.1 βeta"
 spacing_string="%+11s"
 #default config-files directory
-DOTFILE_DIR="DotfilesTest"
+DOTFILE_DIR="Dotfiles"
 #default bashrc directory
 bashrc_dir="sindhu-ubuntu"
 ARG="$@"
@@ -36,12 +36,10 @@ function usage()
 line_fill;
 cat <<EOF
 Usage: ${YELLOW}${SCRIPT}${NC} [options]
-[-c --copy]      [Stows all the files in ${DOTFILE_DIR}]
+[-c --copy]      [Copies all the files in ${DOTFILE_DIR} along with script to stow]
 [-h --help]      [Display this help message]
 [-x --clean]     [Cleanup old config/Renames]
 [-v --version]   [Display version info]
-All argumets in <> are optional and refers to a directory under ${HOME},
-if not provided, defualts to "Dotfiles".
 
 Notice any bugs? Please report it.
 You are welcome to create a pull request on Github, if you can make it better in any way!
@@ -147,6 +145,11 @@ function copy_files()
     destination=${HOME}/${DOTFILE_DIR}/git
     mkdir -p "${destination}"
     rsync -Eav --recursive  --exclude='*.md*' --exclude='*.MD*' git/ "${destination}"
+
+    #----------------------------- office-tools ---------------------------------#
+    destination="${HOME}/${DOTFILE_DIR}/office-tools/.local/bin"
+    mkdir -p "${destination}"
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' office-tools/ "${destination}"
 
     #------------------------------ stow-script ---------------------------------#
     destination=${HOME}/${DOTFILE_DIR}

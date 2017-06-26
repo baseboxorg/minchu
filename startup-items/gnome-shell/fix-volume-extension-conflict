@@ -20,9 +20,16 @@
 # https://extensions.gnome.org/extension/858/volume-mixer/
 function main()
 {
-sleep 10 #wait for all extensions to load
+  #Accepts: one optional argument int:time to sleep in sec
 
-gnome-shell-extension-tool -r sound-output-device-chooser@kgshank.net
+  if [ $# -ne 0 ]; then
+      sleep "$1"
+      gnome-shell-extension-tool -r sound-output-device-chooser@kgshank.net
+  else
+    printf "${YELLOW}Reloading Sound Output Device Chooser Extension${NC}\n"
+    gnome-shell-extension-tool -r sound-output-device-chooser@kgshank.net
+  fi
+
 }
 #
 main "$@"
