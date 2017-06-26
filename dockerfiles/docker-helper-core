@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+
+# This is a bash script containing functions used by docker helper scripts.
+# Version:1.1
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu
+# Requirements - Bash v4.4 and above
+#              - docker installed and you can run without sudo.
+#              - Change the volumes to be mounted appropriately.
+#              - docker-ce v17 and a above [lower versions might work but not tested.]
+#              - Tested on 17.04 zesty 64 bit Ubuntu GNOME
+#              - Kitematic is a recomended (Docker toolbox)
+
+# Common variables to be defined in helper script
+#-----------------------------------------------------------------------------
+# container_name    - Name of the container to be run.
+# docker_folder     - Folder in which Dockerfile is present
+# docker_image      - Name of the docker image
+# image_tag         - Tag of the docker image
+# HELPER_VERSION    - version number of the helper script
+# Helper scripts for individual items should be written in format
+# docker-<app-name> and should contain a function named
+# dockerx_<name of the docker image> which launches the app inside docker.
+# Mounting of volumes, device mapping and other options to be passed to container
+# during run, should be inside this function always.
+# Import the docker-helper-core into the helper scripts containing function above using template below.
+
+<<COMMENT
+#----- Import docker-helper-core -----#
+ if [ -e docker-helper-core ]
+  then
+    . $dir/docker-helper-core
+else
+  printf "Cannot find docker-helper-core in current directory.\nHelper script cannot continue!!\n"
+  exit 1;
+fi
+#-------------------------------------#
+main "#@"
+COMMENT
+
+# Call the main function from last non comment line of helper script by passing all the arguments supplied.
+# Eg: main "#@"
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Changelogs~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# v1.0      - Decoupled from single docker script for reuse of core functions.
+# v1.1      - Fix few bugs and add a import check to docker-helper-core and
+#             docker image build process to check if the file/folder exists.
+
+# TODO
+# 1 [ ] - Ability to launch multiple containers (without name conflict)
+# 2 [ ] - Ability to restart container and pause container.
+# ------------------------------------------------------------------------------
+
+#constants
+YELLOW=$(tput setaf 3)
+BLUE=$(tput setaf 6)
+RED=$(tput setaf 1)
+NC=$(tput sgr 0)
+WIDTH=$(tput cols)
+HELPER_CORE_VERSION="1.1 βeta"
+spacing_string="%-30s"
+
+function usage()
+{
+  #Prints out help menu
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+cat <<EOF
+Usage: ${YELLOW}${SCRIPT}${NC} [options]
+[-b --build]     [Build ${docker_image} docker image from ${docker_folder}]
+[-r --run]       [Run ${container_name} container]
+[-d --delete]    [Delete ${container_name} container]
+[--restart]      [Restart the ${container_name} container]
+[-k --kill]      [Kill the ${container_name} container]
+[-h --help]      [Display this help message]
+[-v --version]   [Display version info]
+
+Notice any bugs? Please report it.
+You are welcome to create a pull request on Github, if you can make it better in any way!
+${BLUE}https://github.com/tprasadtp/minchu${NC}
+EOF
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+}
+
+
+function display_version()
+{
+  printf "${BLUE}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /';
+  printf "${spacing_string} ${YELLOW} : ${HELPER_VERSION} ${NC}\n" "${SCRIPT} version";
+  printf "${spacing_string} ${YELLOW} : ${HELPER_CORE_VERSION} ${NC}\n" "docker-helper-core version" ;
+  printf "${BLUE}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /';
+}
+
+function run_container()
+{
+  # Function: to run a container
+  # Input: imagename, image tag, container_name(Defined in launcher script)
+  # Checks if image exists, if  true checkscontainers by that name are running/
+  # or are in exted state and if none of the are true runs the container.
+  # Expects: Dockerfile to be present in a folder defined by {docker_folder}
+  # Output: Runs container if successful if not gives error in console.
+
+  printf "Checking if the image exists : "
+  if docker inspect "${docker_image}:${image_tag}" > /dev/null 2>&1;  then
+    #printf "${YELLOW}IMAGE EXISTS\n${NC}"
+    # check if container  with same name already exists
+    if [[ "$(docker ps -a -q -f name="${container_name}")" == "" ]]; then
+      #check is the container by that name is already  running
+      if [[ "$(docker ps -a -q -f status=running -f name="${container_name}")" == "" ]]; then
+        #If docker container is not running, if image exists and there is no container by same name execute it.
+        dockerx_${docker_image};
+      else
+        printf "\nDocker container by the name : ${container_name} is already running.\n"
+        return 3;
+      fi
+    else
+      printf "\nDocker container by the name :${container_name} already exists.\n"
+      return 2;
+    fi
+  else
+    printf "\nDocker image not found. please build the image using ${SCRIPT} -b\n"
+    printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    usage;
+    return 1;
+  fi
+}
+
+function build_image()
+{
+  if [ -d "${docker_folder}" ]; then
+    printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\nThis might take a while, grab a Coffee if you wish..\n"
+    sleep 3;
+    printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    docker build -t ${docker_image}:${image_tag} ${docker_folder}
+  else
+      printf "Cannot find ${docker_folder} in current directory.\nHelper script cannot continue!!\n"
+      exit 1;
+  fi
+
+}
+
+function kill_container()
+{
+  # Function to check if container is runnig and if yes kill it
+  # Input: name of the container
+  local container_to_shoot ="${1}"
+
+  if [[ "$(docker ps -a -q -f status=running -f name="${container_name}")" != "" ]]; then
+    printf "Killing ccontainer: ${YELLOW}${container_name} ${NC}\n";
+    docker stop "${container_to_shoot}";
+    return 0;
+  else
+    printf "\nDocker container by the name :${container_name} is not running.\n"
+    return 1;
+  fi
+}
+
+function main()
+{
+      #check if no args
+      if [ $# -eq 0 ]; then
+              printf "\n${BLUE}No arguments found. See usage below.${NC}\n"
+              usage;
+      		    exit 1;
+      fi;
+
+      # Process command line arguments.
+      while [ "$1" != "" ]; do
+          case ${1} in
+              -b | --build )          build_image;
+                                      ;;
+              -r | --run )            run_container;
+                                      exit 0
+                                      ;;
+              -h | --help )           usage;
+                                      exit 0
+                                      ;;
+              -d | --delete )         printf "Removing container: ${YELLOW}${container_name} and its associated volumes${NC}\n";
+                                      docker rm -v ${container_name};
+                                      ;;
+              -k | --kill )           kill_container "${container_name}";
+                                      exit 0
+                                      ;;
+              -v | --version)         display_version;
+                                      exit 0
+                                      ;;
+              * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
+                                      usage;
+                                      exit 1
+                                      ;;
+          esac
+      	shift
+      done
+  }

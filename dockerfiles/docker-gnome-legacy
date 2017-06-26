@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+
+# This is a bash script to launch gnome-builder using docker
+# This version is legaccy version and is not used anymore. Functions have been migrated
+# to docker-helper-core and individual helper scripts for better reusability.
+# Version:1.0 [LEGACY]
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu
+# Requirements - Bash v4.4 and above
+#              - docker installed and you can run without sudo.
+#              - Change the volumes to be mounted appropriately.
+#              - docker v17 and a above [lower versions might work but not tested.]
+#              - Tested on 17.04 zesty 64 bit Ubuntu GNOME
+#              - Kitematic is recomended (Docker toolbox)
+
+SCRIPT=`basename "$0"`
+YELLOW=$(tput setaf 3)
+BLUE=$(tput setaf 6)
+RED=$(tput setaf 1)
+NC=$(tput sgr 0)
+WIDTH=$(tput cols)
+container_name="gnome_builder" #name of the container to be run.
+# Use _ in container names. use - in images and directories
+docker_folder="gnome-builder" #Folder in which Dockerfile is present
+docker_image="gnome-builder" #Name of the docker image
+image_tag="latest" #tag of the docker image
+
+function usage()
+{
+#Prints out help menu
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  echo "Usage: ${YELLOW}${SCRIPT}${NC}\
+   [options]
+  [-b --build]     [Build ${docker_image} docker image from ${docker_folder}]
+  [-r --run]       [Run ${container_name} container]
+  [-d --delete]    [Delete ${container_name} container]
+  [-r --restart]   [Restart the ${container_name} container]
+  [-k --kill]      [Kill the ${container_name} container]
+  [-h --help]      [Display this help message]"
+  printf "\nNotice any bugs? Please report it.\
+  You are welcome to create a pull request on Github, if you can make it better in any way!"
+  printf "\n${BLUE}https://github.com/tprasadtp/minchu${NC}\n";
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+}
+
+function  dockerx_gnome-builder()
+{
+  # Wrapper for docker command to launch gnome builder
+  # Input: none
+  # Output: Runs app in docker
+  # Expects: Docker ti be installed and can run it wothout sudo
+
+  docker run -it \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e DISPLAY=unix$DISPLAY \
+  --device /dev/snd \
+  --name ${container_name} \
+  gnome-builder:latest
+
+}
+function run_container()
+{
+  # Function to run a container
+  # Checks if image exists, if  true checkscontainers by that name are running/
+  # or are in exted state and if none of the are true runs the container.
+  # Expects: Dockerfile to be present in a folder defined by {docker_folder}
+  # Output: Runs container if successful if not gives error in console.
+
+  printf "Checking if the image exists:"
+  if docker inspect "${docker_image}:${image_tag}" > /dev/null 2>&1;  then
+    printf "${RED} IMAGE EXISTS\n${NC}"
+    # check if container  with same name already exists
+    if [[ "$(docker ps -a -q -f name="${container_name}")" == "" ]]; then
+      #check is the container by that name is already  running
+      if [[ "$(docker ps -a -q -f status=running -f name="${container_name}")" == "" ]]; then
+        #If docker container is not running, if image exists and there is no container by same name execute it.
+        dockerx_${docker_image};
+      else
+        printf "\nDocker container by the name : ${container_name} is already running.\n"
+        return 3;
+      fi
+    else
+      printf "\nDocker container by the name :${container_name} already exists.\n"
+      return 2;
+    fi
+  else
+    printf "\nDocker image not found. please build the image using ${SCRIPT} -b\n"
+    printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    usage;
+    return 1;
+  fi
+}
+
+function build_image()
+{
+  printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\
+This might take a while, grab a Coffee if you wish..\n"
+  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  docker build -t ${docker_image}:${image_tag} ${docker_folder}
+}
+
+function kill_container()
+{
+  # Function to check if container is runnig and if yes kill it
+  # Input: name of the container
+  local container_to_shoot ="${1}"
+
+  if [[ "$(docker ps -a -q -f status=running -f name="${container_name}")" != "" ]]; then
+  printf "Killing ccontainer: ${YELLOW}${container_name} ${NC}\n";
+  docker stop "${container_to_shoot}";
+  return 0;
+else
+  printf "\nDocker container by the name :${container_name} is not running.\n"
+  return 1;
+fi
+}
+
+function main()
+{
+      #check if no args
+      if [ $# -eq 0 ]; then
+              printf "\n${BLUE}No arguments found. See usage below.${NC}\n"
+              usage;
+      		    exit 1;
+      fi;
+
+      # Process command line arguments.
+      while [ "$1" != "" ]; do
+          case ${1} in
+              -b | --build )          build_image;
+                                      shift;
+                                      ;;
+              -r | --run )            run_container;
+                                      exit 0
+                                      ;;
+              -h |--h )               usage;
+                                      exit 0
+                                      ;;
+              -d | --delete )         printf "Removing container: ${YELLOW}${container_name} and its associated volumes${NC}\n";
+                                      docker rm -v ${container_name};
+                                      exit 0
+                                      ;;
+              -k | --kill )           kill_container "${container_name}";
+                                      exit 0
+                                      ;;
+              * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
+                                      usage;
+                                      exit 1
+                                      ;;
+          esac
+      	shift
+      done
+    }
+    #
+    main "$@"

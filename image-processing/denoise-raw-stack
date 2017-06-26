@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# I know its stupid script! I will mdify to include all stupid scripts
+# to one when I get free time to make it not stupid :P
+set -e
+OUTPUT_ROTATED="180_FINAL_OUTPUT.tif"
+echo "Converting DNG TO JPG Using Sample Parameter pp3 Given"
+echo "Make sure that the file is present in Directory of input images"
+#sleep 3
+cd input
+rawtherapee -p input.pp3 -t -Y -j100 -js3 -c *.dng
+#sleep 3
+#done
+align_image_stack -a ALIGN -C *.jpg --gpu
+echo "images aligned"
+#sleep 3
+#align_image_stack -a *.jpg
+convert ALIGN* -evaluate-sequence median OUTPUT.jpg
+echo "converted"
