@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This is a bash script to launch gnome-builder using docker helper core
-# Version:1.1
+# Version:1.2
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -11,7 +11,14 @@
 #              - Change the volumes to be mounted appropriately.
 #              - docker-ce v17 and a above [lower versions might work but not tested.]
 #              - Tested on 17.04 zesty 64 bit Ubuntu GNOME
-#              - Kitematic is  recomended (Docker toolbox)
+#              - Kitematic is  recomended
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Changelogs~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# v1.0      - Split core-functions into a seperate module
+# v1.1      - Ability to stop, delete containers
+# v1.2      - Added checks to make sure that the script will work when
+#             dockerfiles are in ~/.local/bin.
+
 
 SCRIPT=`basename "$0"`
 
@@ -24,14 +31,15 @@ container_name="gnome_builder" #name of the container to be run.
 docker_folder="gnome-builder" #Folder in which Dockerfile is present
 docker_image="gnome-builder" #Name of the docker image
 image_tag="latest" #tag of the docker image
-HELPER_VERSION="1.1 βeta"
+HELPER_VERSION="1.2 βeta"
 
 #----- Import docker-helper-core -----#
-if [ -e docker-helper-core ]
-  then
+if [ -e docker-helper-core ]; then
     . $dir/docker-helper-core
+elif command -v docker-helper-core >&/dev/null; then
+  source docker-helper-core
 else
-  printf "Cannot find docker-helper-core in current directory.\nHelper script cannot continue!!\n"
+  printf "Cannot find docker-helper-core in current directory or PATH.\nHelper script cannot continue!!\n"
   exit 1;
 fi
 

@@ -18,6 +18,7 @@ Failed to move to new namespace: PID namespaces supported, Network namespace sup
 https://blog.samcater.com/docker-arch-linux-and-user-namespaces/
 after the step above Use a secomp profile (provided by Jess Frazelle) `--security-opt seccomp:chrome.json`.
   - Run the container with `--cap-add=SYS_ADMIN` or `--privilaged`.
+  - file you need to edit is `docker-chrome`
   - **DO NOT** run with sandbox disabled!. It has access to your xserver and is a security risk without sandboxing.
 
 * #### Spotify for linux
@@ -31,6 +32,10 @@ after the step above Use a secomp profile (provided by Jess Frazelle) `--securit
 * Remember that the helper scripts are not perfect! If something does not work please go back to docker commands.
 * `docker-helper-core` is necessary to run helper scripts since v1.4 as it contains generic functions necessary to run helper scripts.
 * Things might not work with Windows or macOS (has different uid) and you may have to setup ssh forwarding or change uid etc.
+* It is necessary to have the folders containing Dockerfiles in ur current directory or `./local/bin` (when used with stow). When there is a conflict, the local file takes priority.
+* So Remember to use stow to symlink your helper scrips and Dockerfiles for a better experience.
 
 # Permission errors
-You might have an issue with the X11 socket permissions since the default user used by the base image has an user and group ids set to 1000, in that case you can run either create your own base image with the appropriate ids or run `xhost ` on your machine to allow access to xserver and try again.
+* You might have an issue with the X11 socket permissions since the default user used by the base image has an user and group ids set to 1000, in that case you can run either create your own base image with the appropriate ids.
+* Another solution is to run `$ xhost +SI:localuser:$USER` on your machine to allow access to xserver (you might need sudo) and try again. To revert, use `xhost -SI:localuser:$USER`
+Simply running `xhost +` is a bad idea!(Although it works).  

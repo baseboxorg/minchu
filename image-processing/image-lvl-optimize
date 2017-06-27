@@ -7,7 +7,7 @@
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
 # Requirements - Bash v4.4 and above
-#              - imagemagik
+#              - imagemagick
 
 # --------------------------------------------
 # Optimize image to extend level histogram

@@ -1,8 +1,8 @@
-# A collection of scripts used for office use(pdf, tex,documents etc).
+# A collection of scripts used for office use (pdf, tex,documents etc).
 
 ---
-This directory tree contains several scripts used for office tools
-Requirements of individual scripts vary. Sometimes, the scripts simply assume that
+This directory contains several scripts used for office tools
+Requirements of individual scripts vary. Sometimes, the scripts simply assumes that
 you have the necessary packages/binaries installed and they are available to you in PATH etc.
 Please read the comment section of each script before proceeding.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This is a bash script containing functions used by docker helper scripts.
-# Version:1.1
+# Version:1.2
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -26,18 +26,18 @@
 # during run, should be inside this function always.
 # Import the docker-helper-core into the helper scripts containing function above using template below.
 
-<<COMMENT
+
 #----- Import docker-helper-core -----#
- if [ -e docker-helper-core ]
-  then
-    . $dir/docker-helper-core
-else
-  printf "Cannot find docker-helper-core in current directory.\nHelper script cannot continue!!\n"
-  exit 1;
-fi
+# if [ -e docker-helper-core ]
+#  then
+#    . $dir/docker-helper-core
+# else
+#  printf "Cannot find docker-helper-core in current directory.\nHelper script cannot continue!!\n"
+#  exit 1;
+# fi
 #-------------------------------------#
-main "#@"
-COMMENT
+#main "#@"
+
 
 # Call the main function from last non comment line of helper script by passing all the arguments supplied.
 # Eg: main "#@"
@@ -47,6 +47,9 @@ COMMENT
 # v1.0      - Decoupled from single docker script for reuse of core functions.
 # v1.1      - Fix few bugs and add a import check to docker-helper-core and
 #             docker image build process to check if the file/folder exists.
+# v1.2      - Added checks to make sure that the script will work when
+#             dockerfiles are in ~/.local/bin.
+
 
 # TODO
 # 1 [ ] - Ability to launch multiple containers (without name conflict)
@@ -59,7 +62,7 @@ BLUE=$(tput setaf 6)
 RED=$(tput setaf 1)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
-HELPER_CORE_VERSION="1.1 βeta"
+HELPER_CORE_VERSION="1.2 βeta"
 spacing_string="%-30s"
 
 function usage()
@@ -128,13 +131,24 @@ function run_container()
 
 function build_image()
 {
+  # Function builds dokcer image from files mentioned in docker_folder.
+  # Expects: docker_folder to be present in either current directory or /.local/bin with dockerfiles
+  # Priority is to folder in current directory
+  # Checks if docker_folder exists in current dir
   if [ -d "${docker_folder}" ]; then
     printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\nThis might take a while, grab a Coffee if you wish..\n"
     sleep 3;
     printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
     docker build -t ${docker_image}:${image_tag} ${docker_folder}
+  # If it doesnot, check .local/bin
+  elif [[ -d "$HOME/.local/bin/${docker_folder}" ]]; then
+    docker_folder=$HOME/.local/bin/${docker_folder}
+    printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\nThis might take a while, grab a Coffee if you wish..\n"
+    sleep 3;
+    printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+    docker build -t ${docker_image}:${image_tag} "${docker_folder}"
   else
-      printf "Cannot find ${docker_folder} in current directory.\nHelper script cannot continue!!\n"
+      printf "Cannot find ${docker_folder} in current directory or PATH.\nHelper script cannot continue!!\n"
       exit 1;
   fi
 

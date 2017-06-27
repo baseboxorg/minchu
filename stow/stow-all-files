@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This is a bash utility to help stow all th config files on your laptop neatly
-# Version:2.0
+# Version:2.1
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -14,7 +14,7 @@
 # v1.1      - Seperate copy and stow operations (cant use cd in script)
 # v1.2      - Added ability to rename the old dotfiles directory.
 # v2.0      - Populate list to be stowed from a config file and then stow it.
-
+# v2.1      - Added a fallback mode where config_file is missing/not available.
 
 
 

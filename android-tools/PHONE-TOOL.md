@@ -24,7 +24,7 @@ I have not verified the restore operations with backups created using this scrip
  ```
  [-a --apk]         [Batch install all the apk files found in current folder]
  [-i --info]        [Check if Device is connected and if yes, give its details and exit]
- [-p --permissions] [Grant special permissions via adb for cetrain apps]
+ [-p --permissions] [Grant special permissions via adb for certain apps]
  [-r --restore]     [Restore app data in .ab files in current folder]
  [-b --backup]      [Backup app-data]
  [-o --ota]         [Sideload OTA ZIP and exit]
@@ -48,7 +48,7 @@ SYSTEMUI TUNER xyz.paphonb.systemuituner</pre>
 ### Change-logs
 
 #### _v2.4_      
-- Fixs  variables in device check function, Fix several typos.
+- Fixes  variables in device check function, Fix several typos.
 - Added betterbatterystats playstore edition
 - Ability to see version info for script. {Just to keep track of it}
 

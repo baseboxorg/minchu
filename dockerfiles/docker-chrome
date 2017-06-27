@@ -11,7 +11,7 @@
   #              - Change the volumes to be mounted appropriately.
   #              - docker-ce v17 and a above [lower versions might work but not tested.]
   #              - Tested on 17.04 zesty 64 bit Ubuntu GNOME
-  #              - Kitematic is  recomended (Docker toolbox)
+  #              - Kitematic is  recomended 
 
   SCRIPT=`basename "$0"`
 
@@ -42,7 +42,7 @@
     # Wrapper for docker command to launch gnome builder
     # Input: none
     # Output: Runs app in docker
-    # Expects: Docker ti be installed and can run it wothout sudo
+    # Expects: Docker to be installed and can run it wothout sudo
 
     docker run -d \
         -v /tmp/.X11-unix:/tmp/.X11-unix \

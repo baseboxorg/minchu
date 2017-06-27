@@ -1,7 +1,7 @@
 ## A collection of bash/python utilities, config files and dockerfiles
 ---
 This is a repository for collection of bash utilities,scripts and config files I use during my work-flow.
-The Repository is organized into modules.
+The Repository is organized into modules according to functions.
 
 ` Github URL: https://github.com/tprasadtp/minchu `
 
@@ -70,20 +70,20 @@ The Repository is organized into modules.
 ├── minchu.tree
 └── README.md
 ```
-* `android-tools` contains bash utilities to related to android development and day to day life.
+* `android-tools` contains bash scripts related to android development and day to day life.
 * `bash` contains custom `.bashrc` and `.bash_aliases` files in directories labeled by machine/user name.
 * `dockerfiles` contains docker files in sub-directories and helper scripts to launch them.
-* `git` contains custom .gitconfig, .gitignore_global files
-* `image-processing` consist of several image processing scripts.
+* `git` contains custom `.gitconfig, .gitignore_global` files
+* `image-processing` consists of several image processing scripts.
 * `imwheel` contains custom `.imwheelrc` files.
 * `neofetch` contains custom neofetch `config` files.
 * `office-tools` A collection of scripts used for office use(pdf, tex,documents etc).
 * `startup-items` consists of custom scripts to launch at startup on a system categorized into sub-directories.
   + `autostart` contains autostart items to be added to your gnome desktop.
-  + By default they are not listed in stow.list, to symlink them add `autostart` to anew line in stow.list file and sun `./stow-all-files -s`.
-* `stow` contains bash script `stow-all-files` to stow all the files on a fresh system/user profile.
+  + By default they are not listed in stow.list, to symlink them, add `autostart` to a new line in stow.list file and run `./stow-all-files -s`.
+* `stow` contains bash script `stow-all-files` to stow all the files on a fresh system/user profile and its config `stow.list`.
 * `templates` contains several custom template files which can be used in new file context menu especially in nautilus.
-Copy them to `~/Templates` directory and restart nautilus. `nautilus -q`
+Copy them to `~/Templates` and restart nautilus. `nautilus -q`
 * `cp2stow` is bash a script, which copies all the data to "Dotfiles" directory in your Home folder, with a stow script to stow all the files.
   + To copy files to stow, run the script `./cp2stow -c`. This will copy all the files necessary to Dotfiles folder under your home directory.
   + If it is the first time you are using this script, plase rename your existing `.bashrc`, `.bash_aliases` and `.gitignore_global`  files (found under Home directory) to to something like `.bashrc.old`. Do the same for other files if you have any.
@@ -102,7 +102,7 @@ Copy them to `~/Templates` directory and restart nautilus. `nautilus -q`
 
 
 
-### Required additional programs
+### Required additional programs, General  Requirements
 - _adb_ and _fastboot_ for `android-tools`
 - _imagemagick_ for `image-processing`
 - _texlive-extra-utils_ for `office-tools`
@@ -113,6 +113,11 @@ Copy them to `~/Templates` directory and restart nautilus. `nautilus -q`
 - Most of them have help flag `--help -h` builtin.
 
 ### Changelogs
+
+#### _v1.5.2_ , _v1.5.3_
+* Fixed a bug in docker-helper-core which failed to load when it was in /.local/bin.
+* Added .bash_aliases to seperate aliases from .bashrc.
+* Updated documentation.
 
 #### _v1.5.1_
 * Updated documentation
@@ -149,5 +154,6 @@ Copy them to `~/Templates` directory and restart nautilus. `nautilus -q`
 #### _v1.0_
 * Initial upload.
 
-Well Bob, why have you explained every stupid thing in comments? I know most of them and its stupid.
-You might! But that increases readability and in case I let it eat dust and catch up with it after 10 years, it helps.
+Well Bob, why have you explained every stupid thing in comments? I know most of them, its stupid.
+
+--You might! But that increases readability and in case I let it eat dust, catch up with it after 10 years, it helps.

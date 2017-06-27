@@ -9,11 +9,12 @@ ADB debugging enabled and your pc is trusted.
 * Assumes that only one adb device is connected to the PC. Which holds true most of the time.
 Its okay if you have multiple devices connected (including emulators),
 but don't enable adb on multiple devices.
-* Windows Subsystem for Linux is untested and un-verified.
+* Windows Subsystem for Linux is untested and unverified.
 - Have common sense.
 
 ##  adb-screenshot
-A Simple bash script to take screenshots on connected android device vai adb.
+A Simple bash script to take screenshots on connected android device using adb commands and saves them to $HOME/Phone/<script-name>output.
+You can change the output directory and time using the options mentioned below.
 
 ### How to Use
 * Make sure that script is executable.
@@ -34,4 +35,4 @@ A Simple bash script to take screenshots on connected android device vai adb.
  Running without any arguments will use following default values.
  * time interval between screenshots = 5 seconds
  * Path to Captured screenshots: S$HOME/Phone/Screenshots/screenshot-adb-outputs
- * Press Ctrl+C to stop the script.
+ * Press Ctrl+C to stop the script. The script will wait for the device to be connected, and start as soon as it is available. When `-c` flag is not used script will continue indefinitely. 
