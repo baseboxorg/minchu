@@ -1,7 +1,7 @@
 ## A collection of bash/python utilities, config files and dockerfiles
 ---
 This is a repository for collection of bash utilities,scripts and config files I use during my work-flow.
-The Repository tree is organized into modules.
+The Repository is organized into modules.
 
 ` Github URL: https://github.com/tprasadtp/minchu `
 
@@ -15,6 +15,7 @@ The Repository tree is organized into modules.
 │   └── README.md
 ├── bash
 │   └── sindhu-ubuntu
+│       ├── .bash_aliases
 │       └── .bashrc
 ├── dockerfiles
 │   ├── chrome
@@ -46,6 +47,10 @@ The Repository tree is organized into modules.
 │   ├── pdf-rotate
 │   └── README.md
 ├── startup-items
+│   ├── autostart
+│   │   ├── appindicator-fix-startup-dropbox.desktop
+│   │   ├── fix-volume-extension-conflict.desktop
+│   │   └── imwheel.desktop
 │   └── gnome-shell
 │       ├── appindicator-fix-startup-dropbox
 │       ├── fix-volume-extension-conflict
@@ -66,7 +71,7 @@ The Repository tree is organized into modules.
 └── README.md
 ```
 * `android-tools` contains bash utilities to related to android development and day to day life.
-* `bash` contains custom `.bashrc` files in directories labeled by machine/user name.
+* `bash` contains custom `.bashrc` and `.bash_aliases` files in directories labeled by machine/user name.
 * `dockerfiles` contains docker files in sub-directories and helper scripts to launch them.
 * `git` contains custom .gitconfig, .gitignore_global files
 * `image-processing` consist of several image processing scripts.
@@ -74,14 +79,16 @@ The Repository tree is organized into modules.
 * `neofetch` contains custom neofetch `config` files.
 * `office-tools` A collection of scripts used for office use(pdf, tex,documents etc).
 * `startup-items` consists of custom scripts to launch at startup on a system categorized into sub-directories.
+  + `autostart` contains autostart items to be added to your gnome desktop.
+  + By default they are not listed in stow.list, to symlink them add `autostart` to anew line in stow.list file and sun `./stow-all-files -s`.
 * `stow` contains bash script `stow-all-files` to stow all the files on a fresh system/user profile.
 * `templates` contains several custom template files which can be used in new file context menu especially in nautilus.
 Copy them to `~/Templates` directory and restart nautilus. `nautilus -q`
 * `cp2stow` is bash a script, which copies all the data to "Dotfiles" directory in your Home folder, with a stow script to stow all the files.
-  + To copy files to stow, run the script `./cp2stow -c`. This will copy all the files necessary to Dotfiles folder under your home directory to something line `.bashrc.old`.
-  + If you already have some files which conflict with symlinks, you must rename them as before. (eg: neofetch config file under `.local/neofetch/config`)
+  + To copy files to stow, run the script `./cp2stow -c`. This will copy all the files necessary to Dotfiles folder under your home directory.
+  + If it is the first time you are using this script, plase rename your existing `.bashrc`, `.bash_aliases` and `.gitignore_global`  files (found under Home directory) to to something like `.bashrc.old`. Do the same for other files if you have any.
+  + If you already have some files which conflict with symlinks, you must rename them/delete as mentioned above before running the script. (eg: neofetch config file under `.local/neofetch/config`)
   + If you have renamed your Dotfiles directory then your existing symlinks will not work and you need to delete them manually before stowing again.
-  + If it is the first time you are using this script, plase rename your existing `.bashrc` and `.gitignore_global`  files (found under Home directory) to
   + To stow them (symlink them), just run `./stow-all-files -s` from your Dotfiles directory. (cp2stow should have placed the script and a config file there.)
   + This utility uses rsync to copy the files. You need rsync (installed by default in most cases) to run this script.
   + If you see errors saying that it is not owned by stow then you need to manually remove the symlinks.
@@ -92,6 +99,18 @@ Copy them to `~/Templates` directory and restart nautilus. `nautilus -q`
 
 * `minchu.tree` consists of current repository structure. In some cases it might be out of sync with project.
 * Almost every executable requires a flag to run.
+
+
+
+### Required additional programs
+- _adb_ and _fastboot_ for `android-tools`
+- _imagemagick_ for `image-processing`
+- _texlive-extra-utils_ for `office-tools`
+- _stow_ for `stow`: to symlink config files and scripts from a single directory.
+- _imwheel_ for using custom imwheel config
+- Assumes that you are using a debian based system.
+- Please see the documentation in individual folders for details regarding each of them.
+- Most of them have help flag `--help -h` builtin.
 
 ### Changelogs
 

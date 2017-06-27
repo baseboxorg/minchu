@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=fix-volume-extension-conflict
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=Fix Sound Extension Conflict
+Name=Fix Sound Greater than 100% and  Sound device chooser conflict
+Comment[en_US]=Fixes conflict between hell-volume-mixer and sound-output-device-chooser
+Comment=Fixes conflict between hell-volume-mixer and sound-output-device-chooser

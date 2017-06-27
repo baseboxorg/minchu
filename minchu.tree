@@ -6,6 +6,7 @@
 │   └── README.md
 ├── bash
 │   └── sindhu-ubuntu
+│       ├── .bash_aliases
 │       └── .bashrc
 ├── dockerfiles
 │   ├── chrome
@@ -37,6 +38,10 @@
 │   ├── pdf-rotate
 │   └── README.md
 ├── startup-items
+│   ├── autostart
+│   │   ├── appindicator-fix-startup-dropbox.desktop
+│   │   ├── fix-volume-extension-conflict.desktop
+│   │   └── imwheel.desktop
 │   └── gnome-shell
 │       ├── appindicator-fix-startup-dropbox
 │       ├── fix-volume-extension-conflict
@@ -56,4 +61,4 @@
 ├── minchu.tree
 └── README.md
 
-19 directories, 37 files
+20 directories, 41 files

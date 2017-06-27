@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=appindicator-fix-startup-dropbox
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=Dropbox Indicator Fix Startup
+Name=Dropbox Indicator Fix Startup
+Comment[en_US]=Disable startup in dropbox preferences and in startup items. You need stoe to stow the file to local/bin
+Comment=Disable startup in dropbox preferences and in startup items. You need stoe to stow the file to local/bin

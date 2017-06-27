@@ -103,7 +103,7 @@ function copy_files()
   # It makes things not so neat to look for, makes it specific to stowing,
   # conflicts with README.mds etc. (cp)
   if command -v rsync >&/dev/null; then
-    printf "${BLUE}Copying files to ${DOTFILE_DIR}${NC}\n"
+    printf "${BLUE}Copying files to ${DOTFILE_DIR}...${NC}\n"
     line_fill;
 
     #-------------------------- android-tools -----------------------------------#
@@ -114,12 +114,17 @@ function copy_files()
     #-------------------------- dockerfiles -------------------------------------#
     destination="${HOME}/"${DOTFILE_DIR}"/dockerfiles/.local/bin/"
     mkdir -p "${destination}"
-    rsync -avr --recursive --exclude='*.md*' --exclude='*.MD*' dockerfiles/ ${destination}
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' dockerfiles/ ${destination}
 
     #-------------------------- startup-items -----------------------------------#
     destination="${HOME}/${DOTFILE_DIR}/startup-items/.local/bin/"
     mkdir -p "${destination}"
     rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' startup-items/gnome-shell/ "${destination}"
+
+    #-------------------------- startup-items -----------------------------------#
+    destination="${HOME}/${DOTFILE_DIR}/autostart/.config/autostart/"
+    mkdir -p "${destination}"
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' startup-items/autostart/ "${destination}"
 
     #----------------------------- neofetch -------------------------------------#
     destination="${HOME}/${DOTFILE_DIR}/neofetch/.config/neofetch"
@@ -158,7 +163,9 @@ function copy_files()
     gen_script;
 
     line_fill
-    printf "\n${BLUE}Files copied to ${DOTFILE_DIR}. If you saw any errors, please retry.${NC}\n"
+    printf "\n${BLUE}Files copied to $HOME/${DOTFILE_DIR}.\n${YELLOW}
+If you saw any errors, please retry.\nYou need GNU stow to use [ ./stow-all-files -s] to stow them.
+If you are using ubuntu you can install using sudo apt install stow.${NC}\n"
     return 0;
   else
     printf "\nProgram rsync is not installed. Please install rsync.\nThis script requires rsync\n";
