@@ -13,23 +13,24 @@ RUN sed 's/main$/main universe/' -i /etc/apt/sources.list && \
 
 RUN apt-get update && apt-get install -y libgtk2.0-0 libcanberra-gtk-module
 
-RUN wget http://eclipse.c3sl.ufpr.br/technology/epp/downloads/release/luna/SR1/eclipse-java-luna-SR1-linux-gtk-x86_64.tar.gz -O /tmp/eclipse.tar.gz -q && \
+RUN wget http://artfiles.org/eclipse.org//oomph/epp/neon/R3/eclipse-inst-linux64.tar.gz -O /tmp/eclipse.tar.gz -q && \
     echo 'Installing eclipse' && \
     tar -xf /tmp/eclipse.tar.gz -C /opt && \
     rm /tmp/eclipse.tar.gz
 
-ADD run /usr/local/bin/eclipse
 
-RUN chmod +x /usr/local/bin/eclipse && \
-    mkdir -p /home/eclipse && \
-    echo "eclipse:x:1000:1000:eclipse,,,:/home/eclipse:/bin/bash" >> /etc/passwd && \
-    echo "eclipse:x:1000:" >> /etc/group && \
-    echo "eclipse ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/eclipse && \
-    chmod 0440 /etc/sudoers.d/eclipse && \
-    chown eclipse:eclipse -R /home/eclipse && \
-    chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo
+RUN cd /usr/local/bin\
+    ln -s /opt/eclipse/eclipse  \
+    mkdir -p /home/eclipse
+
+ENV HOME /home/eclipse
+
+#Add eclipse user
+RUN groupadd -r eclipse && useradd -r -g eclipse -G audio,video eclipse \
+   && mkdir -p /home/eclipse/Downloads && chown -R eclipse:eclipse /home/eclipse
 
 USER eclipse
 ENV HOME /home/eclipse
 WORKDIR /home/eclipse
-CMD /usr/local/bin/eclipse
+#CMD /usr/local/bin/eclipse
+ENTRYPOINT [ "bash" ]

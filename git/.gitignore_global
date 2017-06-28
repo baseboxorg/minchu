@@ -72,6 +72,13 @@ Thumbs.db
 **/*~
 
 
+#Credentials
+/.ssh
+.git-credentials
+.netrc
+*.kbx
+.boto
+
 #IDES
 /.idea/workspace.xml
 /.idea/tasks.xml

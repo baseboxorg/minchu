@@ -75,3 +75,10 @@ alias updatescroll='killall imwheel && imwheel'
 
 # filter processes
 alias pfilter='ps -faux | grep'
+
+#Project dir aliases
+alias valarie-beacon='cd $HOME/Projects/Git/google-analytics-beacon'
+alias gabeacon='cd $HOME/Projects/Git/google-analytics-beacon'
+alias gominchu='cd $HOME/Projects/Git/minchu'
+alias fingerprint='cd $HOME/Projects/Git/valarie-server'
+alias linkit='cd $HOME/Projects/Git/minchu && ./cp2stow -c'
