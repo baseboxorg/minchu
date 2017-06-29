@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
@@ -78,6 +79,7 @@ esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
+  # shellcheck disable=SC2015
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     alias dir='dir --color=auto'
@@ -106,6 +108,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
 if [ -f ~/.bash_aliases ]; then
+    #shellcheck source=/dev/null
     . ~/.bash_aliases
 fi
 
@@ -124,7 +127,7 @@ fi
 #Transfer.sh relatedstuff
 ## syntax transfer file.txt
 transfer() { if [ $# -eq 0 ]; then printf "No arguments specified. Usage:\netransfer <file>"; return 1; fi
-tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile ; fi; cat $tmpfile; rm -f $tmpfile; echo "";}
+tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> "$tmpfile"; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> "$tmpfile" ; fi; cat "$tmpfile"; rm -f "$tmpfile"; echo "";}
 
 gentree()
 {
@@ -139,7 +142,7 @@ gentree()
       if [ $# -eq 0 ]; then
         echo "No arguments specified. Usage: ${FUNCNAME[0]} <file to write tree to>"; return 2;
       elif [ $# -gt 1 ]; then
-        echo "Invalid number of arguements. Additional arguements will be ignored. \nUsage:${FUNCNAME[0]} <file to write tree to>" ;
+        printf "Invalid number of arguements. Additional arguements will be ignored.\nUsage:${FUNCNAME[0]} <file to write tree to>" ;
       fi;
         tree -a -I .git --dirsfirst > ${1} && printf "$(tput setaf 3)Generated tree file ${1}.$(tput sgr0)\n";
         cat ${1};
@@ -172,7 +175,7 @@ dotfile()
   fi
 }
 #Restart services
-restart()
+restartsv()
 {
     if [ $# -eq 0 ]; then echo "restart: Restart a service using systemd"
     echo "Error: No arguments specified. Usage:restart <service>"; return 1;
@@ -180,6 +183,8 @@ restart()
         echo "Invalid number of arguements. Additional arguements will be ignored  Usage:restart <service>"
     fi;
     if [ $UID -ne 0 ]; then
+        # shellcheck disable=SC2032
+        # shellcheck disable=SC2033
         sudo service $1 restart && echo "$(tput setaf 3)$1$(tput sgr0) Restarted"
     fi;
 }
@@ -194,7 +199,8 @@ export PATH=$HOME/Android/Sdk/platform-tools:$PATH
 export PATH=$HOME/Android/Sdk/build-tools/25.0.3:$PATH
 
 #Add GPG
-export GPG_TTY=$(tty)
+GPG_TTY=$(tty)
+export GPG_TTY
 
 #sudo openvpn --config /path/to/config.ovpn --auth-retry interact
 
@@ -214,6 +220,7 @@ ghost()
 rnm()
 {
     if [ $UID -ne 0 ]; then
+        # shellcheck disable=SC2033
         sudo service network-manager restart && echo "$(tput setaf 3)network-manager $(tput sgr0)Restarted"
     fi;
 }
@@ -221,13 +228,15 @@ rnm()
  minchu ()
 {
 
-        cd $HOME/Projects/Git/minchu && echo "$(tput setaf 3)Okay! Moved to $(tput sgr0)Valarie"
+        cd "$HOME"/Projects/Git/minchu && echo "$(tput setaf 3)Okay! Moved to $(tput sgr0)Valarie"
 
 }
 
 
 # The next line updates PATH for the Google Cloud SDK.
+# shellcheck source=/dev/null
 if [ -f '/home/prasad/.google-cloud/google-cloud-sdk/path.bash.inc' ]; then source '/home/prasad/.google-cloud/google-cloud-sdk/path.bash.inc'; fi
 
 # The next line enables shell command completion for gcloud.
+# shellcheck source=/dev/null
 if [ -f '/home/prasad/.google-cloud/google-cloud-sdk/completion.bash.inc' ]; then source '/home/prasad/.google-cloud/google-cloud-sdk/completion.bash.inc'; fi

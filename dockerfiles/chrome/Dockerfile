@@ -3,6 +3,7 @@
 # Base docker image
 FROM ubuntu:17.04
 LABEL maintainer "Prasad Tengse <https://github.com/tprasadtp/minchu>"
+ENV DEBIAN_FRONTEND noninteractive
 
 ADD https://dl.google.com/linux/direct/google-talkplugin_current_amd64.deb /src/google-talkplugin_current_amd64.deb
 

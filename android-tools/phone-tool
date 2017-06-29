@@ -49,14 +49,14 @@
 
 #Variables
 
-DATE=`date +%Y-%m-%d:%H:%M:%S`
-SCRIPT=`basename "$0"`
+DATE=$(date +%Y-%m-%d:%H:%M:%S)
+SCRIPT=$(basename "$0")
 VERSION="2.4 Beta"
 
 #Package names
 GREENIFY=com.oasisfeng.greenify
 MONOCHROME=com.suyashsrijan.lowbatterymonochrome
-WAKELOCK_DETECTOR=com.uzumapps.wakelockdetector
+#WAKELOCK_DETECTOR=com.uzumapps.wakelockdetector
 GSAM_BATTERY=com.gsamlabs.bbm
 GSAM_BATTERY_PRO=com.gsamlabs.bbm.pro
 BETTER_BATTERY_STATS=com.asksven.betterbatterystats_xdaedition
@@ -72,13 +72,12 @@ PERMISSION_LOGS=android.permission.READ_LOGS
 PERMISSION_SECURE_SETTINGS=android.permission.WRITE_SECURE_SETTINGS
 
 #COLORS and Data for Printf
-ORANGE=$(tput setaf 9)
+#ORANGE=$(tput setaf 9)
 YELLOW=$(tput setaf 3)
 DEEP_BLUE=$(tput setaf 4)
 BLUE=$(tput setaf 6)
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 46)
-PINK2=$(tput setaf 9)
+#RED=$(tput setaf 1)
+#GREEN=$(tput setaf 46)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
 
@@ -131,7 +130,7 @@ function check_if_installed()
   #Input arguments : <package name>  eg. com.spotify.music for Spotify
   #Returns: Sets a global boolean bool_is_installed <true/false>
   bool_is_installed=false #reset Variable
-	if [[ $(adb shell pm list packages | grep -Fx package:"${1}") ]]; then
+	if adb shell pm list packages | grep -qFx package:"${1}"; then
     		printf "\n%-50s: %-15s" "${1}" "INSTALLED"
 		bool_is_installed=true
 	else
@@ -147,8 +146,10 @@ function device_init()
   #Input:None Output:Device details if connected
   printf "\n${BLUE}Waiting for Device...${NC}"
 	adb wait-for-device
-	local DEVICE_NAME=$(adb shell getprop ro.product.model)
-	local DEVICE_SERIAL=$(adb shell getprop ro.serialno)
+	local DEVICE_NAME
+  DEVICE_NAME=$(adb shell getprop ro.product.model)
+	local DEVICE_SERIAL
+  DEVICE_SERIAL=$(adb shell getprop ro.serialno)
 	printf "\n${DEVICE_NAME}:${DEVICE_SERIAL} is Connected!\n"
   line_fill;
 }
@@ -161,15 +162,17 @@ function device_check()
   #Output: Device name, model, serial number and other details
   #Expects: single adb device or none to be connected.
   local NOT_CONNECTED="List of devices attached"
-  local ADB_FOUND=`adb devices | tail -2 | head -1 | cut -f 1 | sed 's/ *$//g'`
+  local ADB_FOUND
+  ADB_FOUND=$(adb devices | tail -2 | head -1 | cut -f 1 | sed 's/ *$//g')
   printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
   line_fill;
-  if [[ ${ADB_FOUND} == ${NOT_CONNECTED} ]]; then
+  if [[ ${ADB_FOUND} == "${NOT_CONNECTED}" ]]; then
     printf "\nNo Android Devices/Emulators found. Have you enabled ADB on your device?\n"
     line_fill;
     return 1
   else
-    local DEVICE_NAME=$(adb shell getprop ro.product.model)
+    local DEVICE_NAME
+    DEVICE_NAME=$(adb shell getprop ro.product.model)
     printf "${YELLOW}Properties for connected ${DEVICE_NAME}:\n${NC}"
     adb shell getprop | grep "model\|version.sdk\|manufacturer\|hardware\|platform\|revision\|serialno\|product.name\|brand\|bootloader\|ro.vendor.build.fingerprint\|ro.vendor.build.date\|sys.oem_unlock_allowed"
     line_fill
@@ -188,7 +191,8 @@ function restore_app_data()
 
   #count .ab adb backup files in the current directory.
   #https://askubuntu.com/questions/454564/count-total-number-of-files-in-particular-directory-with-specific-extension
-  local count_files=$(find -maxdepth 1 -type f -name "*.ab" -exec printf x \; | wc -c)
+  local count_files
+  count_files=$(find . -maxdepth 1 -type f -name "*.ab" -exec printf x \; | wc -c)
   #count_files=`expr $count_files - 1`
   printf "\n${DEEP_BLUE}$count_files ${NC}adb backup files Found."
 
@@ -206,8 +210,8 @@ function restore_app_data()
   do
      printf "\nRestoring app data %d : ${BLUE}%s${NC}\n" "$index" "${file}"
      adb wait-for-device
-     adb restore ${file}
-     index=`expr $index + 1`
+     adb restore "${file}"
+     index=$((index + 1))
   done
   line_fill;
   return 0;
@@ -221,7 +225,8 @@ function apk_batch_install()
   #Expects: APK files are in current directory.
 
 	printf "\n${BLUE}Batch Installing APKs...${NC}"
-	local count_files=$(find -maxdepth 1 -type f -name "*.apk" -exec printf x \; | wc -c)
+	local count_files
+  count_files=$(find . -maxdepth 1 -type f -name "*.apk" -exec printf x \; | wc -c)
 	printf "\n${BLUE}$count_files${NC} APK files Found"
 
   if [[ $count_files = "0" ]]; then
@@ -239,7 +244,7 @@ function apk_batch_install()
 		printf "\nInstalling APK $index : ${BLUE}${file}${NC}: "
 		adb wait-for-device
 		adb install -r "${file}"
-		index=`expr $index + 1`
+		index=$((index + 1))
 	done
 	unset index count_files
   line_fill;
@@ -259,14 +264,14 @@ function set_permissions_cmd()
   local PACKAGE_NAME="${1}"
   local APP_NAME="${2}"
   shift 2;
-  check_if_installed ${PACKAGE_NAME}
+  check_if_installed "${PACKAGE_NAME}"
   if [[ "$bool_is_installed" == "true" ]]
       then
-      printf "\n%-50s: %-30s" "Granting Permissions to" "${APP_NAME}"
+      printf "\n%-50s: %-30s" "Granting Permissions to" "${APP_NAME}\n"
       for permissions_arg in "$@"
         do
               #printf "\nGranting %s" "${permissions_arg}" #DEBUG
-              adb -d shell pm grant ${PACKAGE_NAME} ${permissions_arg}
+              adb -d shell pm grant "${PACKAGE_NAME}" "${permissions_arg}"
       done
   fi
   unset bool_is_installed;
@@ -324,7 +329,8 @@ function ota_sideload()
   line_fill;
   printf "\n${NC}Make sure that zip file and only the right zip file is in same folder as this script or your current folder and it doesn't have any additional zip files."
   #check if a single ota file is present
-  local count_files=$(find -maxdepth 1 -type f -name "*.zip" -exec printf x \; | wc -c)
+  local count_files;
+  count_files=$(find . -maxdepth 1 -type f -name "*.zip" -exec printf x \; | wc -c)
   if [[ "$count_files" -gt "1" ]]; then
     printf "\n${YELLOW}Multiple Zip files found. Cannot continue with sideload operation.\n${NC}"
     return 1;
@@ -338,9 +344,10 @@ function ota_sideload()
     sleep 10
     printf "\nPlease Enter sideload mode on your device.\n"
     while true; do
-        read -p "Have you entered sideload mode? Press N to Exit. (Y/N)" yn
+        read -r "Have you entered sideload mode? Press N to Exit. (Y/N)" yn
         case $yn in
-            [Yy]* ) adb sideload *.zip && printf "\nSideloaded OTA ZIP.";break;;
+            # # shellcheck disable=SC2035
+            [Yy]* ) adb sideload ./*.zip && printf "\nSideloaded OTA ZIP.";break;;
             [Nn]* ) break;;
         esac
     done

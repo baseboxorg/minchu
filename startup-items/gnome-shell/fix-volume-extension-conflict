@@ -18,6 +18,7 @@
 # the Sound output choser at session startup using this script.
 # https://extensions.gnome.org/extension/906/sound-output-device-chooser/
 # https://extensions.gnome.org/extension/858/volume-mixer/
+
 function main()
 {
   #Accepts: one optional argument int:time to sleep in sec

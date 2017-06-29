@@ -59,7 +59,7 @@
 #constants
 YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 6)
-RED=$(tput setaf 1)
+#RED=$(tput setaf 1)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
 HELPER_CORE_VERSION="1.2 βeta"
@@ -158,7 +158,7 @@ function kill_container()
 {
   # Function to check if container is runnig and if yes kill it
   # Input: name of the container
-  local container_to_shoot ="${1}"
+  local container_to_shoot="${1}"
 
   if [[ "$(docker ps -a -q -f status=running -f name="${container_name}")" != "" ]]; then
     printf "Killing ccontainer: ${YELLOW}${container_name} ${NC}\n";

@@ -17,23 +17,22 @@
 #              - Have common sense.
 #
 #COLORS and Data for Printf
-ORANGE=$(tput setaf 9)
+#ORANGE=$(tput setaf 9)
 YELLOW=$(tput setaf 3)
-DEEP_BLUE=$(tput setaf 4)
+#DEEP_BLUE=$(tput setaf 4)
 BLUE=$(tput setaf 6)
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 46)
-PINK2=$(tput setaf 9)
+#RED=$(tput setaf 1)
+#GREEN=$(tput setaf 46)
+#PINK2=$(tput setaf 9)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
 
-DATE=`date +%Y-%m-%d:%H:%M:%S`
-readonly SCRIPT=`basename "$0"`
+readonly SCRIPT=$(basename "$0")
 readonly VERSION="2.0"
 SCREENSHOT_PATH=$HOME/Phone/Screenshots/screenshot-adb-outputs
-OVRRIDE_RATE_FLAG= false
+#OVRRIDE_RATE_FLAG=false
 interval_time=5
-COUNT_LIMIT_FLAG= false
+COUNT_LIMIT_FLAG=false
 
 function line_fill()
 {
@@ -75,7 +74,7 @@ function screenshot_stream()
   # function to take screenshots regular interval-value-in-seconds
   # Default interval_time is 5 sec, Default Path is
   # $HOME/Phone/Screenshots/adb-screenshot-script-outputs
-  mkdir -p  ${SCREENSHOT_PATH}
+  mkdir -p  "${SCREENSHOT_PATH}"
   #
   printf "\n${YELLOW}Capturing screenshots approximately every ${interval_time} seconds on your device.\n"
   line_fill;
@@ -89,7 +88,7 @@ function screenshot_stream()
   do
   {
       #Date stamp
-      DATE=`date +%Y-%m-%d:%H:%M:%S`
+      DATE=$(date +%Y-%m-%d:%H:%M:%S)
       FILE_PATH=${SCREENSHOT_PATH}
       FILE_NAME=${DEVICE_NAME}-${DATE}-${count}.png
       adb exec-out screencap -p > "$FILE_PATH/$FILE_NAME";
@@ -98,7 +97,7 @@ function screenshot_stream()
       if ${COUNT_LIMIT_FLAG}; then
           {
               if [[ $count -eq $COUNT_LIMIT ]]; then
-                  printf "\n$(tput setaf 6)Saved total of ${count} Screenshots in "${FILE_PATH}".$(tput sgr 0)\n";
+                  printf "\n$(tput setaf 6)Saved total of ${count} Screenshots in ${FILE_PATH}.$(tput sgr 0)\n";
                   exit 0;
               fi;
           }

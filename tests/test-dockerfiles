@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# This is a bash utility to test the shellscripts in this repo using travis
+# Version:0.1
+# Author: Prasad Tengse
+# Licence: MIT
+# Github Repository: https://github.com/tprasadtp/minchu
+
+set -e
+set -o pipefail
+
+files=( $(find . -type f -not -iwholename '*.git*' -name "*Dockerfile") )
+
+printf '%s\n' "${files[@]}"
+# build the changed dockerfiles
+cd ./dockerfiles || exit
+for d in */ ; do
+	if ! [[ -e "$d" ]]; then
+		continue
+	fi
+
+	d=$(echo "$d" | sed 's/\/*$//g')
+	image="$d"
+
+	(
+	set -x
+	docker -l warn build -t "${image}":latest "${d}"
+	)
+
+	echo "                       ---                                   "
+	echo "Successfully built ${d} with context ${d}"
+	echo "                       ---                                   "
+done

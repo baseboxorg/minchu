@@ -13,7 +13,7 @@
   #              - Tested on 17.04 zesty 64 bit Ubuntu GNOME
   #              - Kitematic is  recomended
 
-  SCRIPT=`basename "$0"`
+  SCRIPT=$(basename "$0")
 
   #defining current directory
   dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
@@ -29,8 +29,10 @@
   #----- Import docker-helper-core -----#
   if [ -e docker-helper-core ]
     then
-      . $dir/docker-helper-core
+      #shellcheck source=./dockerfiles/docker-helper-core
+      . "$dir"/docker-helper-core
     elif command -v docker-helper-core >&/dev/null; then
+      #shellcheck source=./dockerfiles/docker-helper-core
       source docker-helper-core
     else
       printf "Cannot find docker-helper-core in current directory or PATH.\nHelper script cannot continue!!\n"
@@ -50,13 +52,13 @@
         --net host \
         -v /etc/localtime:/etc/localtime:ro \
         -v /tmp/.X11-unix:/tmp/.X11-unix \
-        -e DISPLAY=unix$DISPLAY \
-        -v $HOME/Downloads:/eclipse/Downloads \
-        -v $HOME/dockervolume:/data \
+        -e DISPLAY=unix"$DISPLAY" \
+        -v "$HOME"/Downloads:/eclipse/Downloads \
+        -v "$HOME"/dockervolume:/data \
         -v /dev/shm:/dev/shm \
         -v /etc/hosts:/etc/hosts \
-    	--name ${container_name} \
-    ${docker_image}:${image_tag}
+    	--name "${container_name} "\
+    "${docker_image}":"${image_tag}"
   }
 
   # Call main function in docker-helper-core to process arguments.

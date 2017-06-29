@@ -20,7 +20,7 @@
 #             dockerfiles are in ~/.local/bin.
 
 
-SCRIPT=`basename "$0"`
+SCRIPT=$(basename "$0")
 
 #defining curret directory
 dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
@@ -35,8 +35,10 @@ HELPER_VERSION="1.2 βeta"
 
 #----- Import docker-helper-core -----#
 if [ -e docker-helper-core ]; then
+    #shellcheck source=./dockerfiles/docker-helper-core
     . $dir/docker-helper-core
 elif command -v docker-helper-core >&/dev/null; then
+  #shellcheck source=./dockerfiles/docker-helper-core
   source docker-helper-core
 else
   printf "Cannot find docker-helper-core in current directory or PATH.\nHelper script cannot continue!!\n"

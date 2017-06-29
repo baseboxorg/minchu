@@ -14,10 +14,10 @@
 #              - Tested on 17.04 zesty 64 bit Ubuntu GNOME
 #              - Kitematic is recomended
 
-SCRIPT=`basename "$0"`
+SCRIPT=$(basename "$0")
 YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 6)
-RED=$(tput setaf 1)
+#RED=$(tput setaf 1)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
 container_name="gnome_builder" #name of the container to be run.
@@ -118,7 +118,7 @@ function kill_container()
 {
   # Function to check if container is runnig and if yes kill it
   # Input: name of the container
-  local container_to_shoot ="${1}"
+  local container_to_shoot="${1}"
 
   if [[ "$(docker ps -a -q -f status=running -f name="${container_name}")" != "" ]]; then
   printf "Killing ccontainer: ${YELLOW}${container_name} ${NC}\n";

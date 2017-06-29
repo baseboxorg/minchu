@@ -2,7 +2,7 @@
 FROM ubuntu:17.04
 LABEL maintainer "Prasad Tengse <https://github.com/tprasadtp/minchu>"
 
-
+ENV DEBIAN_FRONTEND noninteractive
 ARG container-user=gnome-builder
 ENV HOME /home/gnome-builder
 # Install essentials

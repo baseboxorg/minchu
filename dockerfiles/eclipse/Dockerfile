@@ -1,6 +1,7 @@
 FROM ubuntu:17.04
 LABEL maintainer "Prasad Tengse <https://github.com/tprasadtp/minchu>"
 
+ENV DEBIAN_FRONTEND noninteractive
 RUN sed 's/main$/main universe/' -i /etc/apt/sources.list && \
     apt-get update && apt-get install -y software-properties-common && \
     add-apt-repository ppa:webupd8team/java -y && \

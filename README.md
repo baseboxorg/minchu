@@ -99,6 +99,8 @@ Copy them to `~/Templates` and restart nautilus. `nautilus -q`
 
 * `minchu.tree` consists of current repository structure. In some cases it might be out of sync with project.
 * Almost every executable requires a flag to run.
+* `test-shell-scripts` and `test-dockerfiles` are tests to be run on travis ci so as they do not need to be run locally.  
+* `test-shell-scripts` is a test which checks with shellcheck for errors and possible problems. `test-dockerfiles` is a test which builds the docker images and checks if they build and will fail if the image build  fails. 
 
 
 

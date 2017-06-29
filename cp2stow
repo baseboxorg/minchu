@@ -14,11 +14,11 @@
 # Assumes the directory structure as described in minchu.tree
 
 #Constants
-DATE=`date +%Y-%m-%d:%H:%M:%S`
-SCRIPT=`basename "$0"`
+DATE=$(date +%Y-%m-%d:%H:%M:%S)
+SCRIPT=$(basename "$0")
 YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 6)
-RED=$(tput setaf 1)
+#RED=$(tput setaf 1)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
 VERSION="0.1 βeta"
@@ -27,8 +27,6 @@ spacing_string="%+11s"
 DOTFILE_DIR="Dotfiles"
 #default bashrc directory
 bashrc_dir="sindhu-ubuntu"
-ARG="$@"
-CDIR=$PWD
 
 function usage()
 {
@@ -74,8 +72,8 @@ function clean_config()
 {
   # Function Renames the original dotfile directory to .<some-random-number>
   # deleting is avoided because it is not necessary
-  cd $HOME
-  if [ -d ${HOME}/${DOTFILE_DIR} ]; then
+  cd "$HOME" || exit
+  if [ -d "${HOME}/${DOTFILE_DIR}" ]; then
       local directory_suffix=$((1 + RANDOM % 1000));
       mv "${DOTFILE_DIR}" "${DOTFILE_DIR}.${directory_suffix}";
       printf "%-10s ${YELLOW} ${DOTFILE_DIR} ${NC}\n%-10s ${YELLOW} ${DOTFILE_DIR}-${directory_suffix} ${NC}\n" "Moved:" "To:";
@@ -108,13 +106,13 @@ function copy_files()
 
     #-------------------------- android-tools -----------------------------------#
     destination=${HOME}/${DOTFILE_DIR}/android-tools/.local/bin/
-    mkdir -p ${destination}
-    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' android-tools/ ${destination}
+    mkdir -p "${destination}"
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' android-tools/ "${destination}"
 
     #-------------------------- dockerfiles -------------------------------------#
-    destination="${HOME}/"${DOTFILE_DIR}"/dockerfiles/.local/bin/"
+    destination="${HOME}/${DOTFILE_DIR}/dockerfiles/.local/bin/"
     mkdir -p "${destination}"
-    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' dockerfiles/ ${destination}
+    rsync -Eav --recursive --exclude='*.md*' --exclude='*.MD*' dockerfiles/ "${destination}"
 
     #-------------------------- startup-items -----------------------------------#
     destination="${HOME}/${DOTFILE_DIR}/startup-items/.local/bin/"
@@ -178,13 +176,13 @@ function gen_script()
 
 gen_script_file=$HOME/${DOTFILE_DIR}/stow-all-files
 # Writes to stow-all-files regarding its validity and metadata of the script
-cat <<EOM >> ${gen_script_file}
+cat <<EOM >> "${gen_script_file}"
 gen_source=${SCRIPT}
 gen_date=${DATE}
 spacing_string="%+17s"
 main \$@
 EOM
-chmod +x ${gen_script_file}
+chmod +x "${gen_script_file}"
 }
 
 

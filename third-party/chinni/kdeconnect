@@ -4,16 +4,16 @@
 # Version:1.0
 # Author: Prasad Tengse
 # Licence: MIT
-# Github Repository: https://github.com/tprasadtp/minchu 
+# Github Repository: https://github.com/tprasadtp/minchu
 # Requirements - Bash v4.4 and above
 #              - Using either Gnome/Cinnamon/Gnome-shell/MATE
 #              - Ubuntu 16.04 or above only.
 #              - Tested on 17.04 zesty 64 bit Ubunut GNOME
 
-SCRIPT=`basename "$0"`
+SCRIPT=$(basename "$0")
 YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 6)
-RED=$(tput setaf 1)
+RED=$(tput setaf 9)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
 
@@ -22,19 +22,21 @@ function usage()
 #Prints out help menu
   printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
   warn;
-  echo "Usage: ${YELLOW}${SCRIPT}${NC}\
-   [options]
-  [-i --install]   [install kdeconnect on Gnome/Unity/Cinnamon]
-  [-h --help]      [Display this message]"
-  printf "\nNotice any bugs? Please report it.\
-  You are welcome to create a pull request on Github, if you can make it better in any way!"
-  printf "\n${BLUE}https://github.com/tprasadtp/minchu${NC}\n";
-  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+cat <<EOF
+Usage: ${YELLOW} ${SCRIPT} ${NC}
+[options]
+[-i --install]   [install kdeconnect on Gnome/Unity/Cinnamon]
+[-h --help]      [Display this message]
+Notice any bugs? Please report it.
+You are welcome to create a pull request on Github, if you can make it better in any way!
+${BLUE}https://github.com/tprasadtp/minchu${NC}
+EOF
+printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
 }
 
 function warn()
 {
-printf "$(tput setaf 3)Hello! ${USER}\nI am ${SCRIPT}! running on $(uname -n) ${NC}\n"
+printf "Hello! ${USER}\nI am ${SCRIPT} running on $(uname -n)\n"
 printf "${RED}Do not install if you are using KDE. Press [CTRL + C] to stop${NC}\n"
 }
 
