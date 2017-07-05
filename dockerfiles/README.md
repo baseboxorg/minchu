@@ -10,22 +10,22 @@ This directory tree contains several docker files used to build custom docker im
 * #### Ubuntu Gnome `ubuntu-gnome-zesty`  
 [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop/)
 
-  To test ubuntu post install scripts. Uses Ubuntu Gnome as image using base zesty image.
+    To test ubuntu post install scripts. Uses Ubuntu Gnome as image using base zesty image.
 
 * #### Eclipse
 * #### Chrome `chrome`, `chromium`
   [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome)  [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome/)
 
   Works if only user namespaces is enabled by default. If not, use a custom seccomp profile or build a kernel with user namespaces yourself. I have checked it in virtualbox with Debian Jessie.
-  - Errors you might see if you do not have user namespaces enabled
+    - Errors you might see if you do not have user namespaces enabled
 <pre>
 Failed to move to new namespace: PID namespaces supported, Network namespace supported, but failed: errno = Operation not permitted</pre>
-  - Its because your kernel does not support user namespaces. You might need to enable it (debian) or rebuild your kernel with user namespaces enabled. A nice guide is at
+    - Its because your kernel does not support user namespaces. You might need to enable it (debian) or rebuild your kernel with user namespaces enabled. A nice guide is at
 https://blog.samcater.com/docker-arch-linux-and-user-namespaces/
 after the step above Use a secomp profile (provided by Jess Frazelle) `--security-opt seccomp:chrome.json`.
-  - Run the container with `--cap-add=SYS_ADMIN` or `--privilaged`.
-  - file you need to edit is `docker-chrome`
-  - **DO NOT** run with sandbox disabled!. It has access to your xserver and is a security risk without sandboxing.
+    - Run the container with `--cap-add=SYS_ADMIN` or `--privilaged`.
+    - file you need to edit is `docker-chrome`
+    - **DO NOT** run with sandbox disabled!. It has access to your xserver and is a security risk without sandboxing.
 
 * #### Spotify for linux
 * #### Visual Studio Code

@@ -4,7 +4,7 @@ This is a repository for collection of bash utilities,scripts and config files I
 The Repository is organized into modules according to functions.
 
 [![Build Status](https://travis-ci.org/tprasadtp/minchu.svg?branch=master)](https://travis-ci.org/tprasadtp/minchu)
-[![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu/all.svg?label=Pre-release)](https://github.com/tprasadtp/minchu/releases)
+[![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu/all.svg?label=Latest)](https://github.com/tprasadtp/minchu/releases)
 [![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu.svg?label=Stable)](https://github.com/tprasadtp/minchu/releases)
 [![label](https://img.shields.io/github/issues-raw/badges/shields/website.svg)](https://github.com/tprasadtp/minchu/issues)
 [![Maintenance](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/tprasadtp/minchu/commits/master)
@@ -35,6 +35,7 @@ The Repository is organized into modules according to functions.
 │   ├── ubuntu-gnome-zesty
 │   │   └── Dockerfile
 │   ├── docker-chrome
+│   ├── docker-eclipse
 │   ├── docker-gnome-builder
 │   ├── docker-gnome-legacy
 │   ├── docker-helper-core
@@ -67,16 +68,25 @@ The Repository is organized into modules according to functions.
 │   └── stow.list
 ├── templates
 │   ├── LateX Report.tex
+│   ├── Python Plot.py
 │   └── Shell Script
+├── tests
+│   ├── test-dockerfiles
+│   ├── test-dockerfiles-diff
+│   └── test-shell-scripts
 ├── third-party
 │   ├── chinni
 │   │   └── kdeconnect
 │   └── README.md
 ├── cp2stow
 ├── .gitignore
+├── Licence.md
 ├── minchu.tree
-└── README.md
+├── README.md
+└── .travis.yml
 ```
+
+
 * `android-tools` contains bash scripts related to android development and day to day life.
 * `bash` contains custom `.bashrc` and `.bash_aliases` files in directories labeled by machine/user name.
 * `dockerfiles` contains docker files in sub-directories and helper scripts to launch them.
@@ -86,7 +96,8 @@ The Repository is organized into modules according to functions.
 
   + ubuntu-gnome-zesty    [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop/)
 
-* `git` contains custom `.gitconfig, .gitignore_global` files
+* `git` contains custom `.gitconfig, .gitignore_global` files.
+You need to replace email, gpg key and name in `.gitconfig`, otherwise git will try to sign, commit in my name/email/gpg-key instead of yours.
 * `image-processing` consists of several image processing scripts.
 * `imwheel` contains custom `.imwheelrc` files.
 * `neofetch` contains custom neofetch `config` files.
