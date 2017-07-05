@@ -22,11 +22,8 @@
 SCRIPT=$(basename "$0")
 YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 6)
-#RED=$(tput setaf 1)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
-#GREEN=$(tput setaf 46)
-
 readonly config_file=stow.list
 
 
@@ -61,9 +58,9 @@ function line_fill()
   # Input: Variable defining color in format $(tput setaf <number)
   # If input argument is empty it reverts to a default color of Yellow.
   if [ $# -eq 0 ]; then
-    local fill_color=${YELLOW}
+    local fill_color="${YELLOW}"
   else
-    local fill_color=${1}
+    local fill_color="${1}"
   fi
   printf "${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e "s/ /-/g" -e "s/-@/ /" -e "s/@-/ /"
 }
@@ -71,7 +68,7 @@ function line_fill()
 function display_version()
 {
   line_fill "${BLUE}";
-    # shellcheck disable=SC2154
+  # shellcheck disable=SC2154
   printf "${spacing_string} ${YELLOW} ${SCRIPT} ${NC}\n${spacing_string} ${YELLOW} ${gen_date} ${NC}\n" "Executable:" "Generated on:";
   printf "Following directories are listed in config file.\n"
   line_fill "${BLUE}";
@@ -91,9 +88,9 @@ function stow_files()
   # Output: Stows the files in directory mentioned or default (Dotfiles)
   line_fill;
   if command -v stow >&/dev/null; then
-     if [ -d "${DOTFILE_DIR}" ]; then
+    # shellcheck disable=SC2086
+     if [ -d ${DOTFILE_DIR} ]; then
       printf "${BLUE}Stowing files.....\n"
-      # shellcheck disable=SC2154
       stow android-tools \
       neofetch \
       bash-${bashrc_dir}\
@@ -127,7 +124,8 @@ function stow_files_withconfig()
   # Output: Stows the files in directory mentioned or default (Dotfiles)
   if command -v stow >&/dev/null; then
     #check if DOTFILE_DIR exists
-     if [ -d "${DOTFILE_DIR}" ]; then
+      # shellcheck disable=SC2086
+     if [ -d ${DOTFILE_DIR} ]; then
       #check if config file with list of dir exists
         if [ -e stow.list ]; then
           printf "${BLUE}Stowing files.....${NC}\n"
@@ -135,8 +133,7 @@ function stow_files_withconfig()
           while IFS= read -r line
             do
                  #read every line from file and stow it
-
-                  if  stow "$line" ; then
+                 if  stow "$line" ; then
                      printf "Stowed:${line}\n"
                   else
                       printf "Some error occured during adding  ${line}, Ignoring and moving on!\n"
