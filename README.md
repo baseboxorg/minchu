@@ -4,11 +4,11 @@ This is a repository for collection of bash utilities,scripts and config files I
 The Repository is organized into modules according to functions.
 
 [![Build Status](https://travis-ci.org/tprasadtp/minchu.svg?branch=master)](https://travis-ci.org/tprasadtp/minchu)
-[![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu/all.svg?label=Pre--release)](https://github.com/tprasadtp/minchu/releases)
+[![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu/all.svg?label=Pre-release)](https://github.com/tprasadtp/minchu/releases)
 [![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu.svg?label=Stable)](https://github.com/tprasadtp/minchu/releases)
 [![label](https://img.shields.io/github/issues-raw/badges/shields/website.svg)](https://github.com/tprasadtp/minchu/issues)
 [![Maintenance](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/tprasadtp/minchu/commits/master)
-[![Crates.io](https://img.shields.io/tprasadtp/l/minchu.svg)](https://github.com/tprasadtp/minchu)
+[![license](https://img.shields.io/github/license/tprasadtp/minchu.svg)](https://github.com/tprasadtp/minchu)
 
 ` Github URL: https://github.com/tprasadtp/minchu `
 
@@ -80,11 +80,11 @@ The Repository is organized into modules according to functions.
 * `android-tools` contains bash scripts related to android development and day to day life.
 * `bash` contains custom `.bashrc` and `.bash_aliases` files in directories labeled by machine/user name.
 * `dockerfiles` contains docker files in sub-directories and helper scripts to launch them.
-  - chrome   [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome)  [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome/)
+  + chrome   [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome)  [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome/)
 
- - gnome-builder  [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder/)
+  + gnome-builder  [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder/)
 
- - ubuntu-gnome-zesty    [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop/)
+  + ubuntu-gnome-zesty    [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop/)
 
 * `git` contains custom `.gitconfig, .gitignore_global` files
 * `image-processing` consists of several image processing scripts.
@@ -135,6 +135,7 @@ Copy them to `~/Templates` and restart nautilus. `nautilus -q`
 #### _v1.6_
 * Travis CI integration for shellscripts and dockerfiles.
 * Fixed several possible errors in shell scripts.
+* Moved travis ci test scripts to `tests`
 
 #### _v1.5.2_ , _v1.5.3_
 * Fixed a bug in docker-helper-core which failed to load when it was in /.local/bin.

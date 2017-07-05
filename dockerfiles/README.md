@@ -1,16 +1,22 @@
 # A collection of Dockerfiles.
 ---
 This directory tree contains several docker files used to build custom docker images.
-* ####  Gnome Builder `gnome-builder`  [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder/)
- To run gnome-builder inside docker container. Uses Ubuntu  17.04 as base image.
+* ####  Gnome Builder `gnome-builder`  
+  [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder/)
+
+  To run gnome-builder inside docker container. Uses Ubuntu  17.04 as base image.
  - Gnome-Usage does not build and gives an error about missing library.
  - ninja is missing some components.
-* #### Ubuntu Gnome `ubuntu-gnome-zesty`  [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop/)
-To test ubuntu post install scripts. Uses Ubuntu Gnome as image using base zesty image.
+* #### Ubuntu Gnome `ubuntu-gnome-zesty`  
+[![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop/)
+
+  To test ubuntu post install scripts. Uses Ubuntu Gnome as image using base zesty image.
 
 * #### Eclipse
-* #### Chrome `chrome`, `chromium` [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome)  [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome/)
-Works if only user namespaces is enabled by default. If not, use a custom seccomp profile or build a kernel with user namespaces yourself. I have checked it in virtualbox with Debian Jessie.
+* #### Chrome `chrome`, `chromium`
+  [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome)  [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome/)
+
+  Works if only user namespaces is enabled by default. If not, use a custom seccomp profile or build a kernel with user namespaces yourself. I have checked it in virtualbox with Debian Jessie.
   - Errors you might see if you do not have user namespaces enabled
 <pre>
 Failed to move to new namespace: PID namespaces supported, Network namespace supported, but failed: errno = Operation not permitted</pre>
