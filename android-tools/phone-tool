@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # This is a bash utility to help install, backup, restore app data on ur phone.
-# Version:2.4
+# Version:2.5
 # Author: Prasad Tengse
-# Licence: GPLv3
+# Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
 # Requirements - Bash v4.4 and above
 #              - Android Jellybean and above.
@@ -30,6 +30,7 @@
 # v2.4      - Fixs  variables in device check function, Fix several typos.
 #             Added betterbatterystats playstore edition
 #           - Ability to see version info for script. {Just to keep track of it}
+# v2.5      - Improved script, small bug fixes and better shellcheck (Still Printf varibles in quotes is ignored)
 
 # TODO
 # 1 [-]   - Make certain arguments optional using getopt [OTA] [APK, BACKUP DIRECTORY]

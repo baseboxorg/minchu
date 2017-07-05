@@ -3,6 +3,13 @@
 This is a repository for collection of bash utilities,scripts and config files I use during my work-flow.
 The Repository is organized into modules according to functions.
 
+[![Build Status](https://travis-ci.org/tprasadtp/minchu.svg?branch=master)](https://travis-ci.org/tprasadtp/minchu)
+[![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu/all.svg?label=Pre--release)](https://github.com/tprasadtp/minchu/releases)
+[![Latest Version](https://img.shields.io/github/release/tprasadtp/minchu.svg?label=Stable)](https://github.com/tprasadtp/minchu/releases)
+[![label](https://img.shields.io/github/issues-raw/badges/shields/website.svg)](https://github.com/tprasadtp/minchu/issues)
+[![Maintenance](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/tprasadtp/minchu/commits/master)
+[![Crates.io](https://img.shields.io/tprasadtp/l/minchu.svg)](https://github.com/tprasadtp/minchu)
+
 ` Github URL: https://github.com/tprasadtp/minchu `
 
 * Current Project structure
@@ -73,6 +80,12 @@ The Repository is organized into modules according to functions.
 * `android-tools` contains bash scripts related to android development and day to day life.
 * `bash` contains custom `.bashrc` and `.bash_aliases` files in directories labeled by machine/user name.
 * `dockerfiles` contains docker files in sub-directories and helper scripts to launch them.
+  - chrome   [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome)  [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome/)
+
+ - gnome-builder  [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/gnome-builder.svg)](https://hub.docker.com/r/tprasadtp/gnome-builder/)
+
+ - ubuntu-gnome-zesty    [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop) [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/ubuntu-gnome-desktop.svg)](https://hub.docker.com/r/tprasadtp/ubuntu-gnome-desktop/)
+
 * `git` contains custom `.gitconfig, .gitignore_global` files
 * `image-processing` consists of several image processing scripts.
 * `imwheel` contains custom `.imwheelrc` files.
@@ -99,8 +112,10 @@ Copy them to `~/Templates` and restart nautilus. `nautilus -q`
 
 * `minchu.tree` consists of current repository structure. In some cases it might be out of sync with project.
 * Almost every executable requires a flag to run.
-* `test-shell-scripts` and `test-dockerfiles` are tests to be run on travis ci so as they do not need to be run locally.  
-* `test-shell-scripts` is a test which checks with shellcheck for errors and possible problems. `test-dockerfiles` is a test which builds the docker images and checks if they build and will fail if the image build  fails. 
+* `tests` folder contains scripts that are used by travis ci to check for shell scripts and dockerfiles if they build.
+  * `test-shell-scripts` and `test-dockerfiles` are tests to be run on travis ci so as they do not need to be run locally.  
+  * `test-shell-scripts` is a test which checks with shellcheck for errors and possible problems. `test-dockerfiles-diff`  builds the docker images and checks if they build and will fail if the image build  fails. Since it is computationally expensive to build all the dockerfiles only the files which are changed (when compared to master are built).
+  * `test-dockerfiles` builds for all the dockerfiles in the project but is currently not enabled.
 
 
 
@@ -115,6 +130,11 @@ Copy them to `~/Templates` and restart nautilus. `nautilus -q`
 - Most of them have help flag `--help -h` builtin.
 
 ### Changelogs
+
+
+#### _v1.6_
+* Travis CI integration for shellscripts and dockerfiles.
+* Fixed several possible errors in shell scripts.
 
 #### _v1.5.2_ , _v1.5.3_
 * Fixed a bug in docker-helper-core which failed to load when it was in /.local/bin.

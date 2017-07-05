@@ -3,7 +3,7 @@
 # This is a bash utility to help take screenshots on your Android device vua adb.
 # Version:2.4
 # Author: Prasad Tengse
-# Licence: GPLv3
+# Licence: MIT
 # Github Repository: https://github.com/tprasadtp/<repo-name>
 # Requirements - Bash v4.4 and above
 #              - Android Jellybean and above.

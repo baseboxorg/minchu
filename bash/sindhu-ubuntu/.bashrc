@@ -225,10 +225,10 @@ rnm()
     fi;
 }
 
- minchu ()
+ mv2 ()
 {
 
-        cd "$HOME"/Projects/Git/minchu && echo "$(tput setaf 3)Okay! Moved to $(tput sgr0)Valarie"
+        cd "$HOME"/Projects/Git/$1 && echo "$(tput setaf 3)Okay! Moved to: $(tput sgr0)${1}"
 
 }
 

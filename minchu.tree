@@ -19,6 +19,7 @@
 │   ├── ubuntu-gnome-zesty
 │   │   └── Dockerfile
 │   ├── docker-chrome
+│   ├── docker-eclipse
 │   ├── docker-gnome-builder
 │   ├── docker-gnome-legacy
 │   ├── docker-helper-core
@@ -51,14 +52,21 @@
 │   └── stow.list
 ├── templates
 │   ├── LateX Report.tex
+│   ├── Python Plot.py
 │   └── Shell Script
+├── tests
+│   ├── test-dockerfiles
+│   ├── test-dockerfiles-diff
+│   └── test-shell-scripts
 ├── third-party
 │   ├── chinni
 │   │   └── kdeconnect
 │   └── README.md
 ├── cp2stow
 ├── .gitignore
+├── Licence.md
 ├── minchu.tree
-└── README.md
+├── README.md
+└── .travis.yml
 
-20 directories, 41 files
+21 directories, 48 files

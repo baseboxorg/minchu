@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This is a bash utility to test the shellscripts in this repo using travis
+# This is a bash utility to test the dokcerfiles in this repo using travis
 # Version:0.1
 # Author: Prasad Tengse
 # Licence: MIT

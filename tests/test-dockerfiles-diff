@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# This is a bash utility to test the shellscripts in this repo using travis
+# This is a bash utility to test the only the dockerfiles which have changed since
+# last commit to master in this repo using travis ci
 # Version:0.1
 # Author: Prasad Tengse
 # Licence: MIT
