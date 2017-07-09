@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This is a bash script containing functions used by docker helper scripts.
-# Version:1.2
+# Version:1.3
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -18,6 +18,9 @@
 # docker_folder     - Folder in which Dockerfile is present
 # docker_image      - Name of the docker image
 # image_tag         - Tag of the docker image
+# readonly flag_local_dockerfile must be set (true) to use local docker files
+# false to pull from docker hub.
+# repo              - must be set to username of repo if using docker hub
 # HELPER_VERSION    - version number of the helper script
 # Helper scripts for individual items should be written in format
 # docker-<app-name> and should contain a function named
@@ -49,7 +52,7 @@
 #             docker image build process to check if the file/folder exists.
 # v1.2      - Added checks to make sure that the script will work when
 #             dockerfiles are in ~/.local/bin.
-
+# v1.3      - Add functions to run from docker cloud/private registry and in headless mode
 
 # TODO
 # 1 [ ] - Ability to launch multiple containers (without name conflict)
@@ -62,16 +65,16 @@ BLUE=$(tput setaf 6)
 #RED=$(tput setaf 1)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
-HELPER_CORE_VERSION="1.2 βeta"
+HELPER_CORE_VERSION="1.3 βeta"
 spacing_string="%-30s"
 
 function usage()
 {
-  #Prints out help menu
-  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+# Prints out help menu
+printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
 cat <<EOF
 Usage: ${YELLOW}${SCRIPT}${NC} [options]
-[-b --build]     [Build ${docker_image} docker image from ${docker_folder}]
+[-b --build]     [Build/Pull ${docker_image} docker image from ${docker_folder}]
 [-r --run]       [Run ${container_name} container]
 [-d --delete]    [Delete ${container_name} container]
 [--restart]      [Restart the ${container_name} container]
@@ -79,11 +82,12 @@ Usage: ${YELLOW}${SCRIPT}${NC} [options]
 [-h --help]      [Display this help message]
 [-v --version]   [Display version info]
 
+Uses local Dockerfiles : ${YELLOW} ${flag_local_dockerfile}${NC}.
 Notice any bugs? Please report it.
 You are welcome to create a pull request on Github, if you can make it better in any way!
 ${BLUE}https://github.com/tprasadtp/minchu${NC}
 EOF
-  printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
 }
 
 
@@ -103,27 +107,27 @@ function run_container()
   # or are in exted state and if none of the are true runs the container.
   # Expects: Dockerfile to be present in a folder defined by {docker_folder}
   # Output: Runs container if successful if not gives error in console.
-
   printf "Checking if the image exists : "
-  if docker inspect "${docker_image}:${image_tag}" > /dev/null 2>&1;  then
+  if  docker inspect "${docker_image}:${image_tag}" > /dev/null 2>&1  || docker inspect "${repo}:${image_tag}" > /dev/null 2>&1;  then
     #printf "${YELLOW}IMAGE EXISTS\n${NC}"
     # check if container  with same name already exists
     if [[ "$(docker ps -a -q -f name="${container_name}")" == "" ]]; then
       #check is the container by that name is already  running
       if [[ "$(docker ps -a -q -f status=running -f name="${container_name}")" == "" ]]; then
         #If docker container is not running, if image exists and there is no container by same name execute it.
-        dockerx_${docker_image};
+        dockerx_${container_name};
       else
         printf "\nDocker container by the name : ${container_name} is already running.\n"
+        printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
         return 3;
       fi
     else
       printf "\nDocker container by the name :${container_name} already exists.\n"
+      printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
       return 2;
     fi
   else
     printf "\nDocker image not found. please build the image using ${SCRIPT} -b\n"
-    printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
     usage;
     return 1;
   fi
@@ -131,27 +135,35 @@ function run_container()
 
 function build_image()
 {
-  # Function builds dokcer image from files mentioned in docker_folder.
+  # Function builds dokcer image from files mentioned in docker_folder or pulls it from docker hub
   # Expects: docker_folder to be present in either current directory or /.local/bin with dockerfiles
   # Priority is to folder in current directory
   # Checks if docker_folder exists in current dir
-  if [ -d "${docker_folder}" ]; then
-    printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\nThis might take a while, grab a Coffee if you wish..\n"
-    sleep 3;
-    printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
-    docker build -t ${docker_image}:${image_tag} ${docker_folder}
-  # If it doesnot, check .local/bin
-  elif [[ -d "$HOME/.local/bin/${docker_folder}" ]]; then
-    docker_folder=$HOME/.local/bin/${docker_folder}
-    printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\nThis might take a while, grab a Coffee if you wish..\n"
-    sleep 3;
-    printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
-    docker build -t ${docker_image}:${image_tag} "${docker_folder}"
+  # Check if the flag says whether to use dockerfile or a registry
+  if  ${flag_local_dockerfile}; then
+    # If docker files then, use local dockerfile to build and run.
+    if [ -d "${docker_folder}" ]; then
+      printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\nThis might take a while, grab a Coffee if you wish..\n"
+      sleep 3;
+      printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+      docker build -t ${docker_image}:${image_tag} ${docker_folder}
+    # If it doesnot, check .local/bin
+    elif [[ -d "$HOME/.local/bin/${docker_folder}" ]]; then
+      docker_folder=$HOME/.local/bin/${docker_folder}
+      printf "\n${BLUE}Building docker image using Dockerfile in /${docker_folder}.\nThis might take a while, grab a Coffee if you wish..\n"
+      sleep 3;
+      printf "${YELLOW}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+      docker build -t ${docker_image}:${image_tag} "${docker_folder}"
+    else
+        printf "Cannot find ${docker_folder} in current directory or PATH.\nHelper script cannot continue!!\n"
+        exit 1;
+    fi
   else
-      printf "Cannot find ${docker_folder} in current directory or PATH.\nHelper script cannot continue!!\n"
-      exit 1;
+    # If  flag_local_dockerfile is not set use registry mentioned in reg_url or dockerhub
+    # docker helper scripts should handle the url validation. It is not done in helper core.
+    printf "${YELLOW}Using Docker Hub to pull the image\n${BLUE}This might take a few seconds......${NC}\n"
+    docker pull ${repo}:${image_tag}
   fi
-
 }
 
 function kill_container()

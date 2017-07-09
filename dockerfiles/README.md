@@ -27,7 +27,11 @@ after the step above Use a secomp profile (provided by Jess Frazelle) `--securit
     - file you need to edit is `docker-chrome`
     - **DO NOT** run with sandbox disabled!. It has access to your xserver and is a security risk without sandboxing.
 
-* #### Spotify for linux
+* #### Jekyll builder
+  - Uses official docker image to build and serve jekyll pages. By default it uses `jekyll serve` and since jekyll v2.4  it automatically watches for changes and rebuilds it.
+  - By default `http://localhost:4000` is used.
+  - Make sure that you have contents in your current directory and add `_site` folder to `.gitignore` (or use `.gitignore_global` file from this repository)
+
 * #### Visual Studio Code
 
 
@@ -35,6 +39,7 @@ after the step above Use a secomp profile (provided by Jess Frazelle) `--securit
 # Usage
 * You need to build docker images before running them. Use helper scripts starting with `docker-` to launch respected applications.
 * Helper scripts come with easy commands to launch your applications just run `./docker-<insert-docker-folder> -h` to see help menu.
+*  Some scripts use local dockerfiles and some pull the image from dockerhub. To check if a script pulls image from hub just run `docker-<script> -h`, and if the help menu says `Uses local Dockerfiles: false` then the script pulls the image from docker hub.
 * Remember that the helper scripts are not perfect! If something does not work please go back to docker commands.
 * `docker-helper-core` is necessary to run helper scripts since v1.4 as it contains generic functions necessary to run helper scripts.
 * Things might not work with Windows or macOS (has different uid) and you may have to setup ssh forwarding or change uid etc.

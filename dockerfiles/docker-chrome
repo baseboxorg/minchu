@@ -16,7 +16,7 @@
   SCRIPT=$(basename "$0")
   #defining current directory
   dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
-
+  readonly flag_local_dockerfile=true
   #Define variables required by docker-helper-core
   container_name="chrome" #name of the container to be run.
   # Use _ in container names. use - in images and directories
@@ -24,6 +24,7 @@
   docker_image="chrome" #Name of the docker image
   image_tag="latest" #tag of the docker image
   HELPER_VERSION="1.0 βeta"
+  repo=tprasadtp/chrome #repository name from which to pull the image
 
   #----- Import docker-helper-core -----#
   if [ -e docker-helper-core ]

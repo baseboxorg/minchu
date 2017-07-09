@@ -17,7 +17,7 @@
 
   #defining current directory
   dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
-
+  readonly flag_local_dockerfile=true
   #Define variables required by docker-helper-core
   container_name="eclipse" #name of the container to be run.
   # Use _ in container names. use - in images and directories

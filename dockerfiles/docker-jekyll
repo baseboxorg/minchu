@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# This is a bash script to launch gnome-builder using docker helper core
-# Version:1.2
+# This is a bash script to launch jekyll using docker helper core
+# Version: 1.0
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -14,25 +14,24 @@
 #              - Kitematic is  recomended
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Changelogs~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# v1.0      - Split core-functions into a seperate module
-# v1.1      - Ability to stop, delete containers
-# v1.2      - Added checks to make sure that the script will work when
-#             dockerfiles are in ~/.local/bin.
+# v1.0      - Initial writeup
 
 
 SCRIPT=$(basename "$0")
 
 #defining curret directory
 dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
-readonly flag_local_dockerfile=true
+# Other variables required
+readonly JEKYLL_VERSION=3.5
+readonly flag_local_dockerfile=false
 #Define variables required by docker-helper-core
-container_name="gnome_builder" #name of the container to be run.
+container_name="jekyll" #name of the container to be run.
 # Use _ in container names. use - in images and directories
-docker_folder="gnome-builder" #Folder in which Dockerfile is present
-docker_image="gnome-builder" #Name of the docker image
-image_tag="latest" #tag of the docker image
-HELPER_VERSION="1.2 βeta"
-repo=tprasadtp/gnome-builder #repository name from which to pull the image
+# docker_folder="jekyll" #Folder in which Dockerfile is present
+# docker_image="jekyll" #Name of the docker image
+image_tag=${JEKYLL_VERSION} #tag of the docker image
+HELPER_VERSION="1.0 βeta"
+repo=jekyll/builder #repository name from which to pull the image
 
 #----- Import docker-helper-core -----#
 if [ -e docker-helper-core ]; then
@@ -48,19 +47,17 @@ fi
 
 #------------------------------------#
 
-function  dockerx_gnome_builder()
+function  dockerx_jekyll()
 {
-  # Wrapper for docker command to launch gnome builder
+  # Wrapper for docker command to launch jekyll
+  # Builds the site watches for changes and regenerates automatically.
   # Input: none
   # Output: Runs app in docker
   # Expects: Docker to be installed and can run it wothout sudo
-
-  docker run -d \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -e DISPLAY=unix$DISPLAY \
-  --device /dev/snd \
-  --name ${container_name} \
-  gnome-builder:latest
+  docker run --rm \
+    --volume=$PWD:/srv/jekyll \
+    -d jekyll/builder:$JEKYLL_VERSION \
+    jekyll build && jekyll serve
 
 }
 

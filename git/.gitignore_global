@@ -82,3 +82,8 @@ Thumbs.db
 #IDES
 /.idea/workspace.xml
 /.idea/tasks.xml
+
+#Jekyll
+Gemfile.lock
+_site/*
+.jekyll-metadata

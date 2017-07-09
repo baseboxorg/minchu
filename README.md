@@ -38,6 +38,7 @@ The Repository is organized into modules according to functions.
 │   ├── docker-eclipse
 │   ├── docker-gnome-builder
 │   ├── docker-gnome-legacy
+│   ├── docker-jekyll
 │   ├── docker-helper-core
 │   └── README.md
 ├── git
