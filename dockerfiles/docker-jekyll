@@ -36,7 +36,7 @@ repo=jekyll/builder #repository name from which to pull the image
 #----- Import docker-helper-core -----#
 if [ -e docker-helper-core ]; then
     #shellcheck source=./dockerfiles/docker-helper-core
-    . $dir/docker-helper-core
+    . "$dir"/docker-helper-core
 elif command -v docker-helper-core >&/dev/null; then
   #shellcheck source=./dockerfiles/docker-helper-core
   source docker-helper-core
@@ -55,8 +55,8 @@ function  dockerx_jekyll()
   # Output: Runs app in docker
   # Expects: Docker to be installed and can run it wothout sudo
   docker run --rm \
-    --volume=$PWD:/srv/jekyll \
-    -d jekyll/builder:$JEKYLL_VERSION \
+    --volume="$PWD":/srv/jekyll \
+    -d jekyll/builder:"$JEKYLL_VERSION" \
     jekyll build && jekyll serve
 
 }
