@@ -20,9 +20,8 @@ notifications:
       - "Repository: %{repository} Branch : %{branch}"
       - "Commit: <%{compare_url}|%{commit}> - %{commit_message}"
       - "Author: %{author}"
-      - "Build: <%{build_url}|%{build_number}> has %{result}"
-      - "Duration: %{duration}"
-      - "PR <%{pull_request_url}|#%{pull_request_number}"
+      - "Build: <%{build_url}|#%{build_number}> has %{result}, Duration: %{duration}"
+      - "PR: <%{pull_request_url}|#%{pull_request_number}>"
 
   webhooks:
     urls:
