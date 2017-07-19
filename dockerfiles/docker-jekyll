@@ -57,7 +57,7 @@ function  dockerx_jekyll()
   docker run --rm \
     --volume="$PWD":/srv/jekyll \
     -d jekyll/builder:"$JEKYLL_VERSION" \
-    jekyll build && jekyll serve
+    jekyll serve
 
 }
 

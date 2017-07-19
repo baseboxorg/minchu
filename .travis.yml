@@ -17,6 +17,7 @@ notifications:
     on_failure: always # default: always
     on_start: always
     template:
+      - "Build %{result}"
       - "Repository: %{repository} Branch : %{branch}"
       - "Commit: <%{compare_url}|%{commit}> - %{commit_message}"
       - "Author: %{author}"
