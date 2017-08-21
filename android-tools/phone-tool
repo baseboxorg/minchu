@@ -92,7 +92,7 @@ function line_fill()
   else
     local fill_color=${1}
   fi
-  printf "${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  printf "\n${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
 }
 
 #Functions
@@ -268,7 +268,7 @@ function set_permissions_cmd()
   check_if_installed "${PACKAGE_NAME}"
   if [[ "$bool_is_installed" == "true" ]]
       then
-      printf "\n%-50s: %-30s" "Granting Permissions to" "${APP_NAME}\n"
+      printf "\n%-50s: %-30s" "Granting Permissions to" "${YELLOW}${APP_NAME}${NC}"
       for permissions_arg in "$@"
         do
               #printf "\nGranting %s" "${permissions_arg}" #DEBUG
