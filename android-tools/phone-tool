@@ -64,6 +64,7 @@ BETTER_BATTERY_STATS=com.asksven.betterbatterystats_xdaedition
 BETTER_BATTERY_STATS_NXDA=com.asksven.betterbatterystats
 FORCE_DOZE=com.suyashsrijan.forcedoze
 SYSTEMUI_TUNER=xyz.paphonb.systemuituner
+NOUGAT_QUICKSETTINS=it.simonesestito.ntiles
 
 
 #Android Permissions
@@ -296,6 +297,7 @@ function grant_permissions_to_apps()
   set_permissions_cmd ${BETTER_BATTERY_STATS_NXDA} "Better Battery Stats (Play Store)" ${PERMISSION_BATTERY_STATS};
   set_permissions_cmd ${FORCE_DOZE} "Force Doze" ${PERMISSION_DUMP} ${PERMISSION_SECURE_SETTINGS};
   set_permissions_cmd ${SYSTEMUI_TUNER} "System UI Tuner" ${PERMISSION_SECURE_SETTINGS};
+  set_permissions_cmd ${NOUGAT_QUICKSETTINS} "Nougat Quick Settings" ${PERMISSION_SECURE_SETTINGS};
   #printf "\n${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
   line_fill;
   return 0;
