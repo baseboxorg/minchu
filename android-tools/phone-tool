@@ -65,6 +65,7 @@ BETTER_BATTERY_STATS_NXDA=com.asksven.betterbatterystats
 FORCE_DOZE=com.suyashsrijan.forcedoze
 SYSTEMUI_TUNER=xyz.paphonb.systemuituner
 NOUGAT_QUICKSETTINS=it.simonesestito.ntiles
+SUBSTRATUM=projekt.substratum
 
 
 #Android Permissions
@@ -104,9 +105,11 @@ function usage()
 echo "Usage: ${YELLOW}${SCRIPT}${NC}\
     [options]
   [-a --apk]         [Batch install all the apk files found in current folder]
-  [-i --info]        [Check if Device is connected and if yes, give its details and exit]
+  [-i --info]        [Check if Device is connected and if yes, give its details]
   [-p --permissions] [Grant special permissions via adb for cetrain apps]
   [-r --restore]     [Restore app data in .ab files in current folder]
+  [-cs --clear-sub]  [Clear Substratum App Data]
+  [-t --theme]       [List Overlays and enter adb shell ode to choose overlays]
   [-b --backup]      [Backup app-data]
   [-o --ota]         [Sideload OTA ZIP and exit]
   [-h --help]        [Display this message]
@@ -360,6 +363,26 @@ function ota_sideload()
   return 0;
 }
 
+function clear_data_subs()
+{
+  device_init;
+  check_if_installed "${SUBSTRATUM}"
+  if [[ "$bool_is_installed" == "true" ]]
+      then
+      printf "\n%-50s: %-30s" "Clearing App Data" "${YELLOW}Substratum${NC}"
+        adb shell pm clear ${SUBSTRATUM}
+  fi
+  unset bool_is_installed;
+
+}
+
+
+function theme_mode()
+{
+  device_init;
+  adb shell cmd overlay list
+  adb shell
+}
 
 function main()
 {
@@ -398,6 +421,10 @@ function main()
   		   -bhairavi | --bhairavi)  printf "${DEEP_BLUE}\nHi Bhairavi! Nice to meet you! I was written on Sindhu and she said Hello!${NC}\n";
   								                usage;
                                   exit 12
+                                  ;;
+        -cs | --clear-sub)         clear_data_subs;
+                                  ;;
+        -t | --theme)              theme_mode;
                                   ;;
           * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
                                   usage;
