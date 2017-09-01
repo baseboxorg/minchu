@@ -17,11 +17,10 @@ notifications:
     on_failure: always # default: always
     on_start: always
     template:
-      - "Build %{result}"
+      - "Build: <%{build_url}|#%{build_number}> has %{result}, Duration: %{duration}"
       - "Repository: %{repository} Branch : %{branch}"
       - "Commit: <%{compare_url}|%{commit}> - %{commit_message}"
       - "Author: %{author}"
-      - "Build: <%{build_url}|#%{build_number}> has %{result}, Duration: %{duration}"
       - "PR: <%{pull_request_url}|#%{pull_request_number}>"
 
   webhooks:

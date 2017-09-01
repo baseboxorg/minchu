@@ -66,6 +66,11 @@ FORCE_DOZE=com.suyashsrijan.forcedoze
 SYSTEMUI_TUNER=xyz.paphonb.systemuituner
 NOUGAT_QUICKSETTINS=it.simonesestito.ntiles
 SUBSTRATUM=projekt.substratum
+BREVENT=me.piebridge.brevent
+
+#Other Constants
+ANDROID_IP=192.168.0.101
+PORT=7667
 
 
 #Android Permissions
@@ -104,14 +109,18 @@ function usage()
 
 echo "Usage: ${YELLOW}${SCRIPT}${NC}\
     [options]
-  [-a --apk]         [Batch install all the apk files found in current folder]
-  [-i --info]        [Check if Device is connected and if yes, give its details]
-  [-p --permissions] [Grant special permissions via adb for cetrain apps]
-  [-r --restore]     [Restore app data in .ab files in current folder]
-  [-cs --clear-sub]  [Clear Substratum App Data]
-  [-t --theme]       [List Overlays and enter adb shell ode to choose overlays]
-  [-b --backup]      [Backup app-data]
-  [-o --ota]         [Sideload OTA ZIP and exit]
+  [-a  --apk]         [Batch install all the apk files found in current folder]
+  [-b  --backup]      [Backup app-data]
+  [-br --brevent]     [Enable brevent Server on phone]
+  [-cs --clear-sub]   [Clear Substratum App Data]
+  [-i  --info]        [Check if device is connected & if yes, give its details]
+  [-o  --ota]         [Sideload OTA ZIP and exit]
+  [-p  --permissions] [Grant special permissions via adb for cetrain apps]
+  [-r  --restore]     [Restore app data in .ab files in current folder]
+  [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
+  [-w  --wireless]    [connect to adb wirelessly]
+  [-we --wireless-enable] [Enable adb wireless on device]
+
   [-h --help]        [Display this message]
   [-v --version]     [Display script verion and exit]"
 printf "\nNotice any bugs? Please report it. \
@@ -384,6 +393,43 @@ function theme_mode()
   adb shell
 }
 
+
+function enable_brevent()
+{
+  # Enable brevent server on phone
+  device_init;
+  check_if_installed "${BREVENT}"
+  if [[ "$bool_is_installed" == "true" ]]; then
+      printf "\n${BLUE}Enabling Brevent Server....\n${NC}"
+      adb -d shell sh /data/data/${BREVENT}/brevent.sh
+      printf "\n${BLUE}Enjoy Brevent on your device\n${NC}"
+  else
+    printf "\n${BLUE}Brevent not Installed${NC}"
+  fi
+  unset bool_is_installed;
+
+}
+
+
+function adb_wireless()
+{
+  #connect adb wireless on phone
+  if adb connect ${ANDROID_IP}:${PORT}; then
+    printf "\n${BLUE}Connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
+  else
+    printf "\n${BLUE}Failed to connect to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
+  fi
+
+}
+
+function adb_wireless_enable()
+{
+  #enable adb wireless on phone
+  device_init;
+  adb tcpip 7667;
+  adb_wireless;
+}
+
 function main()
 {
   #check if no args
@@ -424,7 +470,13 @@ function main()
                                   ;;
         -cs | --clear-sub)         clear_data_subs;
                                   ;;
-        -t | --theme)              theme_mode;
+         -t | --theme)            theme_mode;
+                                  ;;
+        -br | --brevent)          enable_brevent;
+                                  ;;
+        -w  | --wireless)         adb_wireless;
+                                  ;;
+        -we  | --wireless-enable) adb_wireless_enable;
                                   ;;
           * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
                                   usage;

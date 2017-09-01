@@ -22,14 +22,20 @@ I have not verified the restore operations with backups created using this scrip
 
 
  ```
- [-a --apk]         [Batch install all the apk files found in current folder]
- [-i --info]        [Check if Device is connected and if yes, give its details and exit]
- [-p --permissions] [Grant special permissions via adb for certain apps]
- [-r --restore]     [Restore app data in .ab files in current folder]
- [-b --backup]      [Backup app-data]
- [-o --ota]         [Sideload OTA ZIP and exit]
+ [-a  --apk]         [Batch install all the apk files found in current folder]
+ [-b  --backup]      [Backup app-data]
+ [-br --brevent]     [Enable brevent Server on phone]
+ [-cs --clear-sub]   [Clear Substratum App Data]
+ [-i  --info]        [Check if device is connected & if yes, give its details]
+ [-o  --ota]         [Sideload OTA ZIP and exit]
+ [-p  --permissions] [Grant special permissions via adb for cetrain apps]
+ [-r  --restore]     [Restore app data in .ab files in current folder]
+ [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
+ [-w  --wireless]    [connect to adb wirelessly]
+ [-we --wireless-enable] [Enable adb wireless on device]
+
  [-h --help]        [Display this message]
- [-v --version]     [Display script verion and exit]
+ [-v --version]     [Display script verion and exit]"
  ```
 * Special Permissions include, BATTERY_STATS, DUMP, and WRITE_SECURE_SETTINGS, and are granted to following apps.
 <pre>
@@ -41,6 +47,7 @@ GSAM_BATTERY_PRO=com.gsamlabs.bbm.pro
 BETTER BATTERY STATS com.asksven.betterbatterystats_xdaedition
 BETTER BATTERY STATS_NXDA com.asksven.betterbatterystats
 FORCE DOZE com.suyashsrijan.forcedoze
+NOUGAT_QUICKSETTINS=it.simonesestito.ntiles
 SYSTEMUI TUNER xyz.paphonb.systemuituner</pre>
 * You can customize by simply calling `set_permissions_cmd` from your function with right arguments mentioned in script.
 * You need to manually accept the prompt on device and enter the encryption password if any for it to work. Certain apps might refuse to work with this"
