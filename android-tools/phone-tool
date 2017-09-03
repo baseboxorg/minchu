@@ -67,6 +67,7 @@ SYSTEMUI_TUNER=xyz.paphonb.systemuituner
 NOUGAT_QUICKSETTINS=it.simonesestito.ntiles
 SUBSTRATUM=projekt.substratum
 BREVENT=me.piebridge.brevent
+NAPTIME=com.franco.doze
 
 #Other Constants
 ANDROID_IP=192.168.0.101
@@ -145,10 +146,10 @@ function check_if_installed()
   #Returns: Sets a global boolean bool_is_installed <true/false>
   bool_is_installed=false #reset Variable
 	if adb shell pm list packages | grep -qFx package:"${1}"; then
-    		printf "\n%-50s: %-15s" "${1}" "INSTALLED"
+    		printf "\n%-50s: %+9s" "${1}" "INSTALLED"
 		bool_is_installed=true
 	else
-    		printf "\n%-50s: %-15s" "${1}" "NOT FOUND"
+    		printf "\n%-50s: %+9s" "${1}" "NOT FOUND"
 		bool_is_installed=false
 	fi
 }
@@ -158,13 +159,13 @@ function device_init()
 {
   #Function that waits for adb and shouts what is connected
   #Input:None Output:Device details if connected
-  printf "\n${BLUE}Waiting for Device...${NC}"
+  printf "${BLUE}Waiting for Device...${NC}\n"
 	adb wait-for-device
 	local DEVICE_NAME
   DEVICE_NAME=$(adb shell getprop ro.product.model)
-	local DEVICE_SERIAL
-  DEVICE_SERIAL=$(adb shell getprop ro.serialno)
-	printf "\n${DEVICE_NAME}:${DEVICE_SERIAL} is Connected!\n"
+	#local DEVICE_SERIAL
+  #DEVICE_SERIAL=$(adb shell getprop ro.serialno)
+	printf "${DEVICE_NAME} is Connected!\n"
   line_fill;
 }
 
@@ -178,10 +179,9 @@ function device_check()
   local NOT_CONNECTED="List of devices attached"
   local ADB_FOUND
   ADB_FOUND=$(adb devices | tail -2 | head -1 | cut -f 1 | sed 's/ *$//g')
-  printf "${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
   line_fill;
   if [[ ${ADB_FOUND} == "${NOT_CONNECTED}" ]]; then
-    printf "\nNo Android Devices/Emulators found. Have you enabled ADB on your device?\n"
+    printf "No Android Devices/Emulators found. Have you enabled ADB on your device?\n"
     line_fill;
     return 1
   else
@@ -208,10 +208,10 @@ function restore_app_data()
   local count_files
   count_files=$(find . -maxdepth 1 -type f -name "*.ab" -exec printf x \; | wc -c)
   #count_files=`expr $count_files - 1`
-  printf "\n${DEEP_BLUE}$count_files ${NC}adb backup files Found."
+  printf "${DEEP_BLUE}$count_files ${NC}adb backup files Found."
 
   if [[ $count_files = "0" ]]; then
-    printf "\n${YELLOW}No backup files found.\n${NC}"
+    printf "${YELLOW}No backup files found.\n${NC}"
 
     line_fill;
     return 1;
@@ -244,7 +244,7 @@ function apk_batch_install()
 	printf "\n${BLUE}$count_files${NC} APK files Found"
 
   if [[ $count_files = "0" ]]; then
-    printf "\n${YELLOW}No APK files found.\n${NC}"
+    printf "${YELLOW}No APK files found.\n${NC}"
     line_fill;
     return 1;
   fi
@@ -281,11 +281,11 @@ function set_permissions_cmd()
   check_if_installed "${PACKAGE_NAME}"
   if [[ "$bool_is_installed" == "true" ]]
       then
-      printf "\n%-50s: %-30s" "Granting Permissions to" "${YELLOW}${APP_NAME}${NC}"
+      printf "\n%-50s: %-30s\n" "Granting Permissions to" "${YELLOW}${APP_NAME}${NC}"
       for permissions_arg in "$@"
         do
               #printf "\nGranting %s" "${permissions_arg}" #DEBUG
-              adb -d shell pm grant "${PACKAGE_NAME}" "${permissions_arg}"
+              adb shell pm grant "${PACKAGE_NAME}" "${permissions_arg}"
       done
   fi
   unset bool_is_installed;
@@ -295,7 +295,7 @@ function set_permissions_cmd()
 
 function grant_permissions_to_apps()
 {
-  printf "\n${YELLOW}Granting Special Permissions to apps...${NC}\n"
+  printf "${YELLOW}Granting Special Permissions to apps...${NC}\n"
   #Check if device is connected.
   device_init;
   #Function calls to set_permissions_cmd to grand permissions to required arguments.
@@ -310,6 +310,7 @@ function grant_permissions_to_apps()
   set_permissions_cmd ${FORCE_DOZE} "Force Doze" ${PERMISSION_DUMP} ${PERMISSION_SECURE_SETTINGS};
   set_permissions_cmd ${SYSTEMUI_TUNER} "System UI Tuner" ${PERMISSION_SECURE_SETTINGS};
   set_permissions_cmd ${NOUGAT_QUICKSETTINS} "Nougat Quick Settings" ${PERMISSION_SECURE_SETTINGS};
+  set_permissions_cmd ${NAPTIME} "Naptime Doze" ${PERMISSION_DUMP} ${PERMISSION_SECURE_SETTINGS}
   #printf "\n${YELLOW}%-${WIDTH}s@%s\n${NC}" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
   line_fill;
   return 0;
@@ -401,7 +402,7 @@ function enable_brevent()
   check_if_installed "${BREVENT}"
   if [[ "$bool_is_installed" == "true" ]]; then
       printf "\n${BLUE}Enabling Brevent Server....\n${NC}"
-      adb -d shell sh /data/data/${BREVENT}/brevent.sh
+      adb shell sh /data/data/${BREVENT}/brevent.sh
       printf "\n${BLUE}Enjoy Brevent on your device\n${NC}"
   else
     printf "\n${BLUE}Brevent not Installed${NC}"
@@ -414,10 +415,14 @@ function enable_brevent()
 function adb_wireless()
 {
   #connect adb wireless on phone
-  if adb connect ${ANDROID_IP}:${PORT}; then
-    printf "\n${BLUE}Connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
+  local adb_connect_res=$(adb connect ${ANDROID_IP}:${PORT} | cut -f 1 -d " ")
+  #echo $adb_connect_res
+  if [ ${adb_connect_res} == "connected" ]; then
+    printf "${BLUE}Connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
+  elif [ ${adb_connect_res} == "already" ]; then
+    printf "${BLUE}Already connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
   else
-    printf "\n${BLUE}Failed to connect to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
+    printf "${BLUE}Failed to connect to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
   fi
 
 }
@@ -428,6 +433,12 @@ function adb_wireless_enable()
   device_init;
   adb tcpip 7667;
   adb_wireless;
+}
+
+function adb_disconnect()
+{
+  #To disconnect from the adb device_init
+  adb_disconnect;
 }
 
 function main()
@@ -477,6 +488,9 @@ function main()
         -w  | --wireless)         adb_wireless;
                                   ;;
         -we  | --wireless-enable) adb_wireless_enable;
+                                  ;;
+        -dis  | --disconnect)     adb_disconnect;
+                                  exit 0;
                                   ;;
           * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
                                   usage;

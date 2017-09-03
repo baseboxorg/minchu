@@ -48,7 +48,8 @@ BETTER BATTERY STATS com.asksven.betterbatterystats_xdaedition
 BETTER BATTERY STATS_NXDA com.asksven.betterbatterystats
 FORCE DOZE com.suyashsrijan.forcedoze
 NOUGAT_QUICKSETTINS=it.simonesestito.ntiles
-SYSTEMUI TUNER xyz.paphonb.systemuituner</pre>
+SYSTEMUI TUNER xyz.paphonb.systemuituner
+NAPTIM com.franco.doze </pre>
 * You can customize by simply calling `set_permissions_cmd` from your function with right arguments mentioned in script.
 * You need to manually accept the prompt on device and enter the encryption password if any for it to work. Certain apps might refuse to work with this"
 
