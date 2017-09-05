@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This is a bash utility to help install, backup, restore app data on ur phone.
-# Version:2.5
+# Version:2.7
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -31,6 +31,10 @@
 #             Added betterbatterystats playstore edition
 #           - Ability to see version info for script. {Just to keep track of it}
 # v2.5      - Improved script, small bug fixes and better shellcheck (Still Printf varibles in quotes is ignored)
+# v2.6      - ADB Wireless, Added more packages to permissions (Naptime and Quick settings)
+#           - Added option to launch Brevent, Clear Substratum app data, enable adb wireless modes
+# v2.7      - Added Ability to disable and unistall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
+#           - Disable and Unistall Systemui, ASettigns and android overlays
 
 # TODO
 # 1 [-]   - Make certain arguments optional using getopt [OTA] [APK, BACKUP DIRECTORY]
@@ -41,18 +45,19 @@
 #           Might require PIN on Startup, unpredictable state of the device upon reboot,
 #           adb wait-for-device not available, might require manual reboot etc.
 #          Moreover, its easy to automate it if necessary, with a secondary script wih two lines of code.
-# 3 [ ]   - Better parse the commands (allow soft fails)
+# 3 [-]   - Better parse the commands (allow soft fails)
 # 4 [ ]   - Individual app backups/restore
 # 5 [ ]   - Factory Image restore option [fastboot required]
 # 6 [ ]   - Allow packages to be downgraded
-# 7 [ ]   - Make it work reliably via TCP (Adb over Network)
+# 7 [x]   - Make it work reliably via TCP (Adb over Network)
 # ------------------------------------------------------------------------------
 
 #Variables
 
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 SCRIPT=$(basename "$0")
-VERSION="2.4 Beta"
+VERSION="2.6 Beta"
+
 
 #Package names
 GREENIFY=com.oasisfeng.greenify
@@ -69,9 +74,17 @@ SUBSTRATUM=projekt.substratum
 BREVENT=me.piebridge.brevent
 NAPTIME=com.franco.doze
 
+
+#Package whitelist for overlays
+# these will not be unistalled/disabled during overlay unistallation
+WHITELIST_OVERLY[0]=android.autoinstalls.config.google.nexus # Not an overlay
+WHITELIST_OVERLY[1]=com.android.systemui.navbars.Navbars.S8  # \Nav bar overlay
+WHITELIST_OVERLY[2]=com.google.android.theme.pixel
+
 #Other Constants
 ANDROID_IP=192.168.0.101
 PORT=7667
+DOTFILE_DIR="Dotfiles"
 
 
 #Android Permissions
@@ -85,8 +98,9 @@ PERMISSION_SECURE_SETTINGS=android.permission.WRITE_SECURE_SETTINGS
 YELLOW=$(tput setaf 3)
 DEEP_BLUE=$(tput setaf 4)
 BLUE=$(tput setaf 6)
-#RED=$(tput setaf 1)
-#GREEN=$(tput setaf 46)
+RED=$(tput setaf 9)
+GREEN=$(tput setaf 46)
+WHITE=$(tput setaf 255)
 NC=$(tput sgr 0)
 WIDTH=$(tput cols)
 
@@ -100,7 +114,7 @@ function line_fill()
   else
     local fill_color=${1}
   fi
-  printf "\n${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
+  printf "${fill_color}%-${WIDTH}s@%s${NC}\n" | sed -e 's/ /-/g' -e 's/-@/ /' -e 's/@-/ /'
 }
 
 #Functions
@@ -109,7 +123,7 @@ function usage()
 #Prints out help menu
 
 echo "Usage: ${YELLOW}${SCRIPT}${NC}\
-    [options]
+     [options]
   [-a  --apk]         [Batch install all the apk files found in current folder]
   [-b  --backup]      [Backup app-data]
   [-br --brevent]     [Enable brevent Server on phone]
@@ -120,10 +134,11 @@ echo "Usage: ${YELLOW}${SCRIPT}${NC}\
   [-r  --restore]     [Restore app data in .ab files in current folder]
   [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
   [-w  --wireless]    [connect to adb wirelessly]
-  [-we --wireless-enable] [Enable adb wireless on device]
-
-  [-h --help]        [Display this message]
-  [-v --version]     [Display script verion and exit]"
+  [-we --wl-enable]   [Enable adb wireless on device]
+  [-uo]               [Unistall Overlays belonging to SystemUI, Settings
+                       and Android]
+  [-h --help]         [Display this message]
+  [-v --version]      [Display script verion and exit]"
 printf "\nNotice any bugs? Please report it. \
 You are welcome to create a pull request on Github, if you can make it better in any way!"
 printf "\n${BLUE}https://github.com/tprasadtp/minchu${NC}\n";
@@ -423,6 +438,7 @@ function adb_wireless()
     printf "${BLUE}Already connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
   else
     printf "${BLUE}Failed to connect to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
+    exit 1; #exit if no devicesa re connected
   fi
 
 }
@@ -431,15 +447,89 @@ function adb_wireless_enable()
 {
   #enable adb wireless on phone
   device_init;
-  adb tcpip 7667;
+  adb -d tcpip 7667;
   adb_wireless;
+  printf "Please disconnect the USB cable to avoid conflicts.\n"
+  line_fill;
+  exit 0;
 }
 
 function adb_disconnect()
 {
   #To disconnect from the adb device_init
-  adb_disconnect;
+  adb disconnect;
 }
+
+function uninstall_system_overlays()
+{
+  # To uninstall all the system overlays and disable them.except whitelisted ones
+  # Packages with android, com.android.systemui, com.android.settings will be disabled and unisntalled
+  # List installed overlays and write ato a tmp directory and unistall them
+  # Systemui
+   device_init;
+   mkdir -p /tmp/overlay-list
+   adb shell pm list packages | grep  package:com.android.systemui. | cut -d ":" -f 2 > /tmp/overlay-list/systemui-overlay.txt
+   uninstall_ovelays_by_package "/tmp/overlay-list/systemui-overlay.txt" "SYSTEMUI"
+   # Android
+   adb shell pm list packages | grep  package:android. | cut -d ":" -f 2 > /tmp/overlay-list/android-overlay.txt
+   uninstall_ovelays_by_package "/tmp/overlay-list/android-overlay.txt" "ANDROID"
+   # Settings
+   adb shell pm list packages | grep  package:com.android.settings. | cut -d ":" -f 2 > /tmp/overlay-list/settings-overlay.txt
+   uninstall_ovelays_by_package "/tmp/overlay-list/settings-overlay.txt" "SETTINGS"
+   #rm -rf /tmp/overlay-list/
+
+}
+
+function uninstall_ovelays_by_package()
+{
+  # Unistall overlays starting/intended for a certain package using the files created by uninstall_system_overlays function
+  # Accepts : two arguments
+  # First: list containing the overlays
+  # Second: Name describing to which type the overlays belong to
+  local file_list=${1}
+  local overlay_type=${2}
+  local is_whitelisted=false
+  local line;
+  if [ -e ${file_list} ]; then
+    printf "Disabling and Unistalling ${overlay_type} Overlays.....${NC}\n"
+    line_fill ${WHITE};
+    #read every line from file, disable and unistall it
+    while IFS= read -r line
+      do
+          # Reset the whitelist flag
+          is_whitelisted=false
+          #Check if package is in whitelist
+          for whitelist in "${WHITELIST_OVERLY[@]}"
+            do
+              if [[ "${line}" == "${whitelist}" ]] ; then
+                #to skip unistalling whitelisted overlays set a flag
+                #echo "whitelisted set to true for ${line}"
+                is_whitelisted=true
+                break;
+              fi
+          done
+          # IF the package is whitelisted skip it
+          if [[ ${is_whitelisted} == "true" ]]; then
+              printf "${GREEN}WHITELISTED:${NC} ${line}\n"
+              continue;
+          fi
+              adb shell cmd overlay disable ${line}
+              if [ $(adb uninstall "$line") == "Success" ]  ; then
+                  printf "${YELLOW}UNINSTALLED:${NC} ${line}\n"
+              else
+                  printf "Some error occured during unistalling  ${line}, Ignoring and moving on!\n"
+              fi
+      done < ${file_list}
+      line_fill "${WHITE}";
+    return 0;
+  else
+    printf "Config file ${file_list} is missing\n"
+    line_fill "${WHITE}";
+    exit 1;
+  fi
+
+}
+
 
 function main()
 {
@@ -479,7 +569,7 @@ function main()
   								                usage;
                                   exit 12
                                   ;;
-        -cs | --clear-sub)         clear_data_subs;
+        -cs | --clear-sub)        clear_data_subs;
                                   ;;
          -t | --theme)            theme_mode;
                                   ;;
@@ -487,10 +577,12 @@ function main()
                                   ;;
         -w  | --wireless)         adb_wireless;
                                   ;;
-        -we  | --wireless-enable) adb_wireless_enable;
+       -we  | --wireless-enable)  adb_wireless_enable;
                                   ;;
-        -dis  | --disconnect)     adb_disconnect;
+       -dis | --disconnect)       adb_disconnect;
                                   exit 0;
+                                  ;;
+       -uo | --unistall-overlays) uninstall_system_overlays;
                                   ;;
           * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
                                   usage;

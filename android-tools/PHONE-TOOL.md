@@ -33,6 +33,7 @@ I have not verified the restore operations with backups created using this scrip
  [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
  [-w  --wireless]    [connect to adb wirelessly]
  [-we --wireless-enable] [Enable adb wireless on device]
+ [-uo --unistall-overlays] [Un-Install system overlays for systemui, settings and core android packages]
 
  [-h --help]        [Display this message]
  [-v --version]     [Display script verion and exit]"
@@ -54,6 +55,18 @@ NAPTIM com.franco.doze </pre>
 * You need to manually accept the prompt on device and enter the encryption password if any for it to work. Certain apps might refuse to work with this"
 
 ### Change-logs
+
+
+#### _v2.7_
+- Added Ability to disable and unistall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
+- Disable and Unistall Systemui, ASettigns and android overlays
+
+#### _v2.6_
+- ADB Wireless, Added more packages to permissions (Naptime and Quick settings)
+- Added option to launch Brevent, Clear Substratum app data, enable adb wireless modes
+
+#### _v2.5_
+- Improved script, small bug fixes and better shellcheck (Still Printf varibles in quotes is ignored)
 
 #### _v2.4_      
 - Fixes  variables in device check function, Fix several typos.

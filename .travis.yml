@@ -15,7 +15,6 @@ notifications:
       - secure: "x+DhlS8Ghe9u6kEX7ABxzYLWm6Xlsv6f6RF7EjbCClX1Ln3Xjac5hhwFvMszlUpa+XbplMhz7dMvYzj/0nQtSe5qylvHor1JLnwbgkh0tuvvQAFva73oK+x/xopaJjC+wFadvXjih9rMRMz7PbeA5GzZLiceAnzz29TnqYYR7fEm44c88MNGhrsr9uBzufYTSt8NEblb3eIaVLRqHUeemVxIn6n3SGkDOb7mhyAv0Je0a+eVLlZ2KAx2I7QjPrAM9LFkBaLfO0rZ6DCBRZV80bW4zVbAkJ2zFmcpFmUf4lzBoZpCesmOmDAQ7m1azF98MCkUXeJwBk2fEe6DD+I0OVphZiXPLo3jFolKAMuko95lV57G76WcbVxvK9xRo4F5dd9CKC611DlqpZrIy+c06+HSFld0pCeEvgqeSVUrCyHT38o+SHSAu6SaQSqKZuEUMWR3e6D3/sgqUM3ZMqa9rrrq0xR7l9N1KmxMQRQQ+bMSJxwiIPZ2FajZHMJsLQe8gWRZQAA7JDiXuOcjhABBHHup4Iewwtk/muafiOJgdgT5pLMDzr34JVIjgtjlXRXGSWXYmtiJSiTegfKGbmyB2ILsXGVwNAWrfcODuPBu4oCJlY2YhORCTZVt0UnKOBWuksyNqxV6yDMaaOyi6GnQ7j2WHtANyhq+N2ZmWDQyvvk="
     on_success: always # default: always
     on_failure: always # default: always
-    on_start: always
     template:
       - "Build: <%{build_url}|#%{build_number}> has %{result}, Duration: %{duration}"
       - "Repository: %{repository} Branch : %{branch}"
