@@ -41,6 +41,7 @@ I have not verified the restore operations with backups created using this scrip
  [-w  --wireless]    [connect to adb wirelessly]
  [-we --wireless-enable] [Enable adb wireless on device]
  [-uo --unistall-overlays] [Un-Install system overlays for systemui, settings and core android packages]
+ [-ut <theme name> ] [Uninstall theme]
 
  [-h --help]        [Display this message]
  [-v --version]     [Display script verion and exit]"
@@ -65,6 +66,9 @@ I have not verified the restore operations with backups created using this scrip
 
 ### Changelogs
 
+#### _v2.8_
+- Option to Uninstall overlays by theme name
+- fixed a bug where only one overlay was being un-installed
 
 #### _v2.7_
 - Added Ability to disable and unistall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
