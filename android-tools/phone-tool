@@ -34,7 +34,7 @@
 # v2.6      - ADB Wireless, Added more packages to permissions (Naptime and Quick settings)
 #           - Added option to launch Brevent, Clear Substratum app data, enable adb wireless modes
 # v2.7      - Added Ability to disable and unistall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
-#           - Disable and Unistall Systemui, ASettigns and android overlays
+#           - Disable and Unistall Systemui, Settigns and android overlays
 
 # TODO
 # 1 [-]   - Make certain arguments optional using getopt [OTA] [APK, BACKUP DIRECTORY]

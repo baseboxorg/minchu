@@ -59,7 +59,6 @@ NAPTIM com.franco.doze </pre>
 
 #### _v2.7_
 - Added Ability to disable and unistall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
-- Disable and Unistall Systemui, ASettigns and android overlays
 
 #### _v2.6_
 - ADB Wireless, Added more packages to permissions (Naptime and Quick settings)
