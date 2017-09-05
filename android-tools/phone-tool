@@ -430,7 +430,8 @@ function enable_brevent()
 function adb_wireless()
 {
   #connect adb wireless on phone
-  local adb_connect_res=$(adb connect ${ANDROID_IP}:${PORT} | cut -f 1 -d " ")
+  local adb_connect_res
+  adb_connect_res=$(adb connect ${ANDROID_IP}:${PORT} | cut -f 1 -d " ")
   #echo $adb_connect_res
   if [ ${adb_connect_res} == "connected" ]; then
     printf "${BLUE}Connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
@@ -514,7 +515,7 @@ function uninstall_ovelays_by_package()
               continue;
           fi
               adb shell cmd overlay disable ${line}
-              if [ $(adb uninstall "$line") == "Success" ]  ; then
+              if [ "$(adb uninstall ${line})" == "Success" ]  ; then
                   printf "${YELLOW}UNINSTALLED:${NC} ${line}\n"
               else
                   printf "Some error occured during unistalling  ${line}, Ignoring and moving on!\n"
