@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This is a bash utility to help install, backup, restore app data on ur phone.
-# Version:2.7
+# Version:2.8
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -35,7 +35,8 @@
 #           - Added option to launch Brevent, Clear Substratum app data, enable adb wireless modes
 # v2.7      - Added Ability to disable and unistall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
 #           - Disable and Unistall Systemui, Settigns and android overlays
-
+# V2.8      - Option to Uninstall overlays by theme name
+#           - fixed a bug where only one overlay was being un-installed
 # TODO
 # 1 [-]   - Make certain arguments optional using getopt [OTA] [APK, BACKUP DIRECTORY]
 #           It makes things more complex/forces use of external tools/some non standard functions
@@ -56,7 +57,7 @@
 
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 SCRIPT=$(basename "$0")
-VERSION="2.6 Beta"
+VERSION="2.7 Beta"
 
 
 #Package names
@@ -135,8 +136,9 @@ echo "Usage: ${YELLOW}${SCRIPT}${NC}\
   [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
   [-w  --wireless]    [connect to adb wirelessly]
   [-we --wl-enable]   [Enable adb wireless on device]
-  [-uo]               [Unistall Overlays belonging to SystemUI, Settings
+  [-uso]               [Unistall Overlays belonging to SystemUI, Settings
                        and Android]
+  [-ut <theme name> ] [Uninstall theme]
   [-h --help]         [Display this message]
   [-v --version]      [Display script verion and exit]"
 printf "\nNotice any bugs? Please report it. \
@@ -253,10 +255,10 @@ function apk_batch_install()
   #This functions installs apks found in current directory no arguments are accepted.
   #Expects: APK files are in current directory.
 
-	printf "\n${BLUE}Batch Installing APKs...${NC}"
+	printf "${BLUE}Batch Installing APKs...${NC}\n"
 	local count_files
   count_files=$(find . -maxdepth 1 -type f -name "*.apk" -exec printf x \; | wc -c)
-	printf "\n${BLUE}$count_files${NC} APK files Found"
+	printf "${BLUE}$count_files${NC} APK files Found\n"
 
   if [[ $count_files = "0" ]]; then
     printf "${YELLOW}No APK files found.\n${NC}"
@@ -481,6 +483,26 @@ function uninstall_system_overlays()
 
 }
 
+function uninstall_overlays_by_theme()
+{
+  # Function to unistall a package by a theme name
+  # Theme name should be in package name
+  # Must have a single argument with theme name ti be passed
+  # Input: Theme name as it appears in package name Eg: In com.android.systemui.CompactUI
+  # CompactUI Should be argument. (case sensitive)
+  # Output: none
+  local theme_name=${1}
+  if [ "${theme_name}" == "" ]; then
+          printf "${BLUE}Not enough arguments found. \n${NC}"
+          line_fill;
+  		    exit 1;
+  fi;
+  local unistall_list="/tmp/overlay-list/unistall.txt"
+  adb shell pm list packages | grep "${theme_name}" | cut -d ":" -f 2 >${unistall_list}
+  cat ${unistall_list}
+  uninstall_ovelays_by_package "${unistall_list}" "${theme_name}"
+}
+
 function uninstall_ovelays_by_package()
 {
   # Unistall overlays starting/intended for a certain package using the files created by uninstall_system_overlays function
@@ -497,32 +519,27 @@ function uninstall_ovelays_by_package()
     #read every line from file, disable and unistall it
     while IFS= read -r line
       do
-          # Reset the whitelist flag
+          # Reset the flag
           is_whitelisted=false
-          #Check if package is in whitelist
-          for whitelist in "${WHITELIST_OVERLY[@]}"
-            do
-              if [[ "${line}" == "${whitelist}" ]] ; then
-                #to skip unistalling whitelisted overlays set a flag
-                #echo "whitelisted set to true for ${line}"
-                is_whitelisted=true
-                break;
-              fi
+          for whitelist_item in ${WHITELIST_OVERLY[@]}
+          do
+            if [ "${line}" = "$whitelist_item" ]; then
+            #  if WHITELISTED set the flag
+             # printf "${line} is WHITELISTED\n"
+             is_whitelisted=true
+             break
+            fi
           done
-          # IF the package is whitelisted skip it
-          if [[ ${is_whitelisted} == "true" ]]; then
-              printf "${GREEN}WHITELISTED:${NC} ${line}\n"
-              continue;
+          if [ "${is_whitelisted}" = true ] ; then
+            printf "${GREEN}WHITELISTED:${NC}${line}\n"
+            continue
           fi
-              adb shell cmd overlay disable ${line}
-              if [ "$(adb uninstall ${line})" == "Success" ]  ; then
-                  printf "${YELLOW}UNINSTALLED:${NC} ${line}\n"
-              else
-                  printf "Some error occured during unistalling  ${line}, Ignoring and moving on!\n"
-              fi
+          #adb shell cmd overlay disable "${line}"
+          echo "$line"
+          adb uninstall ${line}
+          #unistall_single_overlay_package "${line}"
       done < ${file_list}
       line_fill "${WHITE}";
-    return 0;
   else
     printf "Config file ${file_list} is missing\n"
     line_fill "${WHITE}";
@@ -583,7 +600,11 @@ function main()
        -dis | --disconnect)       adb_disconnect;
                                   exit 0;
                                   ;;
-       -uo | --unistall-overlays) uninstall_system_overlays;
+      -uso | --unistall-overlays) uninstall_system_overlays;
+                                  ;;
+       -ut | --unistall-theme)    shift
+                                  uninstall_overlays_by_theme "${1}";
+                                  exit 0;
                                   ;;
           * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
                                   usage;
