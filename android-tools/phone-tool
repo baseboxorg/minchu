@@ -521,7 +521,7 @@ function uninstall_ovelays_by_package()
       do
           # Reset the flag
           is_whitelisted=false
-          for whitelist_item in "${WHITELIST_OVERLY[@]}""
+          for whitelist_item in "${WHITELIST_OVERLY[@]}"
           do
             if [ "${line}" = "$whitelist_item" ]; then
             #  if WHITELISTED set the flag
