@@ -126,6 +126,7 @@ function usage()
 echo "Usage: ${YELLOW}${SCRIPT}${NC}\
      [options]
   [-a  --apk]         [Batch install all the apk files found in current folder]
+  [-ar --after-reboot][Perform after reboot items]
   [-b  --backup]      [Backup app-data]
   [-br --brevent]     [Enable brevent Server on phone]
   [-cs --clear-sub]   [Clear Substratum App Data]
@@ -454,7 +455,6 @@ function adb_wireless_enable()
   adb_wireless;
   printf "Please disconnect the USB cable to avoid conflicts.\n"
   line_fill;
-  exit 0;
 }
 
 function adb_disconnect()
@@ -548,6 +548,18 @@ function uninstall_ovelays_by_package()
 
 }
 
+function after_reboot_items()
+{
+  local yn
+  adb_disconnect;
+  adb_wireless_enable;
+  while true; do
+    read -p "Have you disconnected the USB cable?" yn
+    case $yn in
+    [Yy]* )  adb_disconnect; adb_wireless; enable_brevent;break;;
+    esac
+  done
+}
 
 function main()
 {
@@ -594,6 +606,7 @@ function main()
         -br | --brevent)          enable_brevent;
                                   ;;
         -w  | --wireless)         adb_wireless;
+                                  exit 0;
                                   ;;
        -we  | --wireless-enable)  adb_wireless_enable;
                                   ;;
@@ -605,6 +618,8 @@ function main()
        -ut | --unistall-theme)    shift
                                   uninstall_overlays_by_theme "${1}";
                                   exit 0;
+                                  ;;
+       -ar | --after-reboot)      after_reboot_items;
                                   ;;
           * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
                                   usage;
