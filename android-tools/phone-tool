@@ -57,7 +57,7 @@
 
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 SCRIPT=$(basename "$0")
-VERSION="2.7 Beta"
+VERSION="2.8 Beta"
 
 
 #Package names
@@ -554,7 +554,7 @@ function after_reboot_items()
   adb_disconnect;
   adb_wireless_enable;
   while true; do
-    read -p "Have you disconnected the USB cable?" yn
+    read -r "Have you disconnected the USB cable?" yn
     case $yn in
     [Yy]* )  adb_disconnect; adb_wireless; enable_brevent;break;;
     esac

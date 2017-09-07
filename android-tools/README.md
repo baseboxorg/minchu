@@ -30,7 +30,7 @@ I have not verified the restore operations with backups created using this scrip
 
  ```
  [-a  --apk]         [Batch install all the apk files found in current folder]
- [-ar --after-reboot][ PErform afer reboot items like connect to adb wireless, and enable brevent servers etc. Can be customized.]
+ [-ar --after-reboot][Perform afer reboot items like connect to adb wireless, and enable brevent servers etc. Can be customized.]
  [-b  --backup]      [Backup app-data]
  [-br --brevent]     [Enable brevent Server on phone]
  [-cs --clear-sub]   [Clear Substratum App Data]
