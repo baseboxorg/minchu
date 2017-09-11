@@ -19,7 +19,9 @@ I have not verified the restore operations with backups created using this scrip
 # `phone-tool`
 ---
 ## A Simple helper script for adb functions.
-
+[![Build Status](https://travis-ci.org/tprasadtp/minchu.svg?branch=master)](https://travis-ci.org/tprasadtp/minchu)
+[![Phone-tool](https://img.shields.io/badge/phonetool-2.9-yellow.svg)](https://github.com/tprasadtp/minchu/tree/master/android-tools)
+[![license](https://img.shields.io/github/license/tprasadtp/minchu.svg)](https://github.com/tprasadtp/minchu)
 
 ### How to Use
 * Make sure that script is executable.
@@ -30,18 +32,19 @@ I have not verified the restore operations with backups created using this scrip
 
  ```
  [-a  --apk]         [Batch install all the apk files found in current folder]
- [-ar --after-reboot][Perform afer reboot items like connect to adb wireless, and enable brevent servers etc. Can be customized.]
+ [-ar --after-reboot][Perform after reboot items like connect to adb wireless, and enable brevent servers etc. Can be customized.]
  [-b  --backup]      [Backup app-data]
  [-br --brevent]     [Enable brevent Server on phone]
  [-cs --clear-sub]   [Clear Substratum App Data]
  [-i  --info]        [Check if device is connected & if yes, give its details]
  [-o  --ota]         [Sideload OTA ZIP and exit]
- [-p  --permissions] [Grant special permissions via adb for cetrain apps]
+ [-p  --permissions] [Grant special permissions via adb for certain apps]
  [-r  --restore]     [Restore app data in .ab files in current folder]
+ [-s --substratum]   [Enable Andromeda add-on server for Substratum]
  [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
  [-w  --wireless]    [connect to adb wirelessly]
  [-we --wireless-enable] [Enable adb wireless on device]
- [-uo --unistall-overlays] [Un-Install system overlays for systemui, settings and core android packages]
+ [-uo --unistall-overlays] [Uninstall system overlays for systemui, settings and core android packages]
  [-ut <theme name> ] [Uninstall theme]
 
  [-h --help]        [Display this message]
@@ -62,17 +65,20 @@ I have not verified the restore operations with backups created using this scrip
 |Nougat Quick settings | it.simonesestito.ntiles |
 |System UI Tuner | xyz.paphonb.systemuituner |
 |Naptime | com.franco.doze |
+|Andromeda | project.andromeda|
+|Substratum | projekt.substratum |
 * You can customize by simply calling `set_permissions_cmd` from your function with right arguments mentioned in script.
 * You need to manually accept the prompt on device and enter the encryption password if any for it to work. Certain apps might refuse to work with this"
+* For Andromeda and Substratum only run in background permission is granted using this script.
 
 ### Changelogs
 
 #### _v2.8_
 - Option to Uninstall overlays by theme name
-- fixed a bug where only one overlay was being un-installed
+- fixed a bug where only one overlay was being uninstalled
 
 #### _v2.7_
-- Added Ability to disable and unistall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
+- Added Ability to disable and uninstall theme overlays for android Oreo (will not work on 7.1.2 or below versions)
 
 #### _v2.6_
 - ADB Wireless, Added more packages to permissions (Naptime and Quick settings)

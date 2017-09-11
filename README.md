@@ -88,7 +88,7 @@ The Repository is organized into modules according to functions.
 ```
 
 
-* `android-tools` contains bash scripts related to android development and day to day life.
+* `android-tools` contains bash scripts related to android development and tweaks and utilities. Please see [README](https://github.com/tprasadtp/minchu/blob/master/android-tools/README.md) for more detailed information.
 * `bash` contains custom `.bashrc` and `.bash_aliases` files in directories labeled by machine/user name.
 * `dockerfiles` contains docker files in sub-directories and helper scripts to launch them.
   + chrome   [![Docker Build Statu](https://img.shields.io/docker/build/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome)  [![Docker Automated buil](https://img.shields.io/docker/automated/tprasadtp/chrome.svg)](https://hub.docker.com/r/tprasadtp/chrome/)

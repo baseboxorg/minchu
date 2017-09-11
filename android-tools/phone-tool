@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This is a bash utility to help install, backup, restore app data on ur phone.
-# Version:2.8
+# Version:2.9
 # Author: Prasad Tengse
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
@@ -37,6 +37,7 @@
 #           - Disable and Unistall Systemui, Settigns and android overlays
 # V2.8      - Option to Uninstall overlays by theme name
 #           - fixed a bug where only one overlay was being un-installed
+# v2.9      - Enable Substratum Andromeda server
 # TODO
 # 1 [-]   - Make certain arguments optional using getopt [OTA] [APK, BACKUP DIRECTORY]
 #           It makes things more complex/forces use of external tools/some non standard functions
@@ -57,7 +58,7 @@
 
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 SCRIPT=$(basename "$0")
-VERSION="2.8 Beta"
+VERSION="2.9 Beta"
 
 
 #Package names
@@ -74,18 +75,19 @@ NOUGAT_QUICKSETTINS=it.simonesestito.ntiles
 SUBSTRATUM=projekt.substratum
 BREVENT=me.piebridge.brevent
 NAPTIME=com.franco.doze
+ANDROMEDA=projekt.andromeda
 
 
 #Package whitelist for overlays
 # these will not be unistalled/disabled during overlay unistallation
 WHITELIST_OVERLY[0]=android.autoinstalls.config.google.nexus # Not an overlay
-WHITELIST_OVERLY[1]=com.android.systemui.navbars.Navbars.S8  # \Nav bar overlay
-WHITELIST_OVERLY[2]=com.google.android.theme.pixel
+WHITELIST_OVERLY[1]=com.android.systemui.navbars.Navbars.S8  # Nav bar overlay
+WHITELIST_OVERLY[2]=com.google.android.theme.pixel #Pixel theme (Not compiled from substratum so leave it)
 
 #Other Constants
 ANDROID_IP=192.168.0.101
 PORT=7667
-DOTFILE_DIR="Dotfiles"
+#DOTFILE_DIR="Dotfiles"
 
 
 #Android Permissions
@@ -99,7 +101,7 @@ PERMISSION_SECURE_SETTINGS=android.permission.WRITE_SECURE_SETTINGS
 YELLOW=$(tput setaf 3)
 DEEP_BLUE=$(tput setaf 4)
 BLUE=$(tput setaf 6)
-RED=$(tput setaf 9)
+#RED=$(tput setaf 9)
 GREEN=$(tput setaf 46)
 WHITE=$(tput setaf 255)
 NC=$(tput sgr 0)
@@ -134,17 +136,18 @@ echo "Usage: ${YELLOW}${SCRIPT}${NC}\
   [-o  --ota]         [Sideload OTA ZIP and exit]
   [-p  --permissions] [Grant special permissions via adb for cetrain apps]
   [-r  --restore]     [Restore app data in .ab files in current folder]
+  [-s  --substratum]  [Enable Andromeda add-on server for Substratum]
   [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
+  [-uso]              [Unistall Overlays belonging to SystemUI, Settings
+                       and Android]
   [-w  --wireless]    [connect to adb wirelessly]
   [-we --wl-enable]   [Enable adb wireless on device]
-  [-uso]               [Unistall Overlays belonging to SystemUI, Settings
-                       and Android]
-  [-ut <theme name> ] [Uninstall theme]
+  [-ut <theme name>]  [Uninstall theme]
   [-h --help]         [Display this message]
   [-v --version]      [Display script verion and exit]"
 printf "\nNotice any bugs? Please report it. \
 You are welcome to create a pull request on Github, if you can make it better in any way!"
-printf "\n${BLUE}https://github.com/tprasadtp/minchu${NC}\n";
+printf "\n${YELLOW}Github Repository : ${BLUE}https://github.com/tprasadtp/minchu${NC}\n";
 
 line_fill;
 }
@@ -417,6 +420,7 @@ function enable_brevent()
 {
   # Enable brevent server on phone
   device_init;
+  unset bool_is_installed;
   check_if_installed "${BREVENT}"
   if [[ "$bool_is_installed" == "true" ]]; then
       printf "\n${BLUE}Enabling Brevent Server....\n${NC}"
@@ -433,16 +437,16 @@ function enable_brevent()
 function adb_wireless()
 {
   #connect adb wireless on phone
-  local adb_connect_res
-  adb_connect_res=$(adb connect ${ANDROID_IP}:${PORT} | cut -f 1 -d " ")
+  local adb_connect_result
+  adb_connect_result=$(adb connect ${ANDROID_IP}:${PORT} | cut -f 1 -d " ")
   #echo $adb_connect_res
-  if [ ${adb_connect_res} == "connected" ]; then
+  if [ "${adb_connect_result}" == "connected" ]; then
     printf "${BLUE}Connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
-  elif [ ${adb_connect_res} == "already" ]; then
+  elif [ "${adb_connect_result}" == "already" ]; then
     printf "${BLUE}Already connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
   else
-    printf "${BLUE}Failed to connect to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
-    exit 1; #exit if no devicesa re connected
+    printf "${BLUE}ERROR: Failed to connect to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
+    exit 1; #exit if cannot connect
   fi
 
 }
@@ -452,6 +456,7 @@ function adb_wireless_enable()
   #enable adb wireless on phone
   device_init;
   adb -d tcpip 7667;
+  adb disconnect;
   adb_wireless;
   printf "Please disconnect the USB cable to avoid conflicts.\n"
   line_fill;
@@ -507,15 +512,15 @@ function uninstall_ovelays_by_package()
 {
   # Unistall overlays starting/intended for a certain package using the files created by uninstall_system_overlays function
   # Accepts : two arguments
-  # First: list containing the overlays
+  # First: file with list containing the overlays
   # Second: Name describing to which type the overlays belong to
   local file_list=${1}
   local overlay_type=${2}
   local is_whitelisted=false
   local line;
-  if [ -e ${file_list} ]; then
+  if [ -e "${file_list}" ]; then
     printf "Disabling and Unistalling ${overlay_type} Overlays.....${NC}\n"
-    line_fill ${WHITE};
+    line_fill "${WHITE}";
     #read every line from file, disable and unistall it
     while IFS= read -r line
       do
@@ -535,13 +540,13 @@ function uninstall_ovelays_by_package()
             continue
           fi
           #adb shell cmd overlay disable "${line}"
-          echo "$line"
-          adb uninstall ${line}
+          printf "Uninstalling: %s\n" "$line"
+          adb uninstall "$line"
           #unistall_single_overlay_package "${line}"
-      done < ${file_list}
+      done < "$file_list"
       line_fill "${WHITE}";
   else
-    printf "Config file ${file_list} is missing\n"
+    printf "ERROR: Config file ${file_list} is missing!\n"
     line_fill "${WHITE}";
     exit 1;
   fi
@@ -556,9 +561,40 @@ function after_reboot_items()
   while true; do
     read -r "Have you disconnected the USB cable?" yn
     case $yn in
-    [Yy]* )  adb_disconnect; adb_wireless; enable_brevent;break;;
+    [Yy]* )  adb_disconnect; adb_wireless; enable_brevent;enable_substratum_andromeda;break;;
     esac
   done
+}
+
+function enable_substratum_andromeda()
+{
+  #Function to start andromeda server on device
+  #Input arguments: None Output: None.
+  #Credits:[projekt.] development team
+  local package_path # path where andromeda is installed
+  local kill_list # processes to be kiled (if server is already running)
+  unset bool_is_installed; #clear the variable
+  check_if_installed "${ANDROMEDA}"
+  if [[ "$bool_is_installed" == "true" ]]; then
+      printf "${BLUE}Andromeda Start Shell Script by [projekt.] development team${NC}\n"
+      package_path=$(adb shell pm path projekt.andromeda | cut -d : -f 2 | sed s/\\r//g)
+      kill_list=$(adb shell pidof andromeda-server)
+      # Check if we need to kill the existing pids, then kill them if needed
+      if [[ "${kill_list}" == "" ]]; then
+        adb shell am force-stop ${SUBSTRATUM}
+      else
+        adb shell am force-stop ${SUBSTRATUM}
+        adb shell kill -9 ${kill_list}
+      fi
+      adb shell appops set ${SUBSTRATUM} RUN_IN_BACKGROUND allow
+      adb shell appops set ${SUBSTRATUM} RUN_IN_BACKGROUND allow
+      adb shell CLASSPATH=${package_path} app_process /system/bin --nice-name=andromeda-server projekt.andromeda.Andromeda &
+      printf "${YELLOW}You can now remove your device from the computer!${NC}\n"
+      printf "\n${BLUE}Enjoy Substratum+Andromeda on your device\n${NC}"
+  else
+    printf "\n${BLUE}Andromeda is not Installed${NC}"
+  fi
+  unset bool_is_installed;
 }
 
 function main()
@@ -570,6 +606,12 @@ function main()
           usage;
   		    exit 1;
   fi;
+
+# check for adb
+  if [ "$(which adb)" == "" ]; then
+    printf "\n${YELLOW}No adb binaries found in syetem path.\n This Script cannot continue\n${NC}"
+    exit 2;
+  fi
 
   #welcome;
   # Process command line arguments.
@@ -587,13 +629,13 @@ function main()
   		    -b | --backup )			    backup_all;
   								                ;;
           -o | --ota )            ota_sideload;
-                                  exit 0
+                                  exit 0;
                                   ;;
           -h |--help )            usage;
-                                  exit 0
+                                  exit 0;
                                   ;;
           -v | --version)         display_version;
-                                  exit 0
+                                  exit 0;
                                   ;;
   		   -bhairavi | --bhairavi)  printf "${DEEP_BLUE}\nHi Bhairavi! Nice to meet you! I was written on Sindhu and she said Hello!${NC}\n";
   								                usage;
@@ -621,9 +663,11 @@ function main()
                                   ;;
        -ar | --after-reboot)      after_reboot_items;
                                   ;;
+        -s | --substratum)        enable_substratum_andromeda;
+                                  ;;
           * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
                                   usage;
-                                  exit 1
+                                  exit 1;
                                   ;;
       esac
   	shift
