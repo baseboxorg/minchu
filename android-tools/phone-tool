@@ -167,10 +167,10 @@ function check_if_installed()
   #Returns: Sets a global boolean bool_is_installed <true/false>
   bool_is_installed=false #reset Variable
 	if adb shell pm list packages | grep -qFx package:"${1}"; then
-    		printf "\n%-50s: %+9s" "${1}" "INSTALLED"
+    		printf "%-30s: %+9s\n" "${1}" "${BLUE}INSTALLED${NC}"
 		bool_is_installed=true
 	else
-    		printf "\n%-50s: %+9s" "${1}" "NOT FOUND"
+    		printf "%-30s: %+9s\n" "${1}" "${YELLOW}NOT FOUND${NC}"
 		bool_is_installed=false
 	fi
 }
@@ -427,10 +427,10 @@ function enable_brevent()
       adb shell sh /data/data/${BREVENT}/brevent.sh
       printf "\n${BLUE}Enjoy Brevent on your device\n${NC}"
   else
-    printf "\n${BLUE}Brevent not Installed${NC}"
+    printf "\n${YELLOW}Brevent not Installed${NC}\n"
   fi
   unset bool_is_installed;
-
+  line_fill;
 }
 
 
@@ -559,7 +559,7 @@ function after_reboot_items()
   adb_disconnect;
   adb_wireless_enable;
   while true; do
-    read -r "Have you disconnected the USB cable?" yn
+    read -n 1 -r -p "Have you disconnected the USB cable?" yn
     case $yn in
     [Yy]* )  adb_disconnect; adb_wireless; enable_brevent;enable_substratum_andromeda;break;;
     esac
@@ -574,27 +574,29 @@ function enable_substratum_andromeda()
   local package_path # path where andromeda is installed
   local kill_list # processes to be kiled (if server is already running)
   unset bool_is_installed; #clear the variable
+  printf "${BLUE}Andromeda Start Shell Script${NC}\n"
+  line_fill;
+  printf "Checking if Andromeda app is installed.....\n"
   check_if_installed "${ANDROMEDA}"
+  #bool_is_installed=false #testing only
   if [[ "$bool_is_installed" == "true" ]]; then
-      printf "${BLUE}Andromeda Start Shell Script by [projekt.] development team${NC}\n"
       package_path=$(adb shell pm path projekt.andromeda | cut -d : -f 2 | sed s/\\r//g)
       kill_list=$(adb shell pidof andromeda-server)
       # Check if we need to kill the existing pids, then kill them if needed
-      if [[ "${kill_list}" == "" ]]; then
-        adb shell am force-stop ${SUBSTRATUM}
-      else
-        adb shell am force-stop ${SUBSTRATUM}
+      if [[ "${kill_list}" != "" ]]; then
+        printf "Killing already running andromeda server with pid : %s\n" "${YELLOW}$kill_list${NC}"
         adb shell kill -9 ${kill_list}
       fi
-      adb shell appops set ${SUBSTRATUM} RUN_IN_BACKGROUND allow
+      printf "Granting permissions to run in Background\n"
+      adb shell appops set ${ANDROMEDA} RUN_IN_BACKGROUND allow
       adb shell appops set ${SUBSTRATUM} RUN_IN_BACKGROUND allow
       adb shell CLASSPATH=${package_path} app_process /system/bin --nice-name=andromeda-server projekt.andromeda.Andromeda &
-      printf "${YELLOW}You can now remove your device from the computer!${NC}\n"
-      printf "\n${BLUE}Enjoy Substratum+Andromeda on your device\n${NC}"
+      printf "${BLUE}Enjoy Substratum+Andromeda on your device\n${NC}"
   else
-    printf "\n${BLUE}Andromeda is not Installed${NC}"
+    printf "${YELLOW}Opps! Andromeda is not Installed${NC}\nPlease visit:${BLUE} https://play.google.com/store/apps/details?id=projekt.andromeda ${NC}to install Andromeda.\n"
   fi
   unset bool_is_installed;
+  line_fill;
 }
 
 function main()
@@ -648,9 +650,9 @@ function main()
         -br | --brevent)          enable_brevent;
                                   ;;
         -w  | --wireless)         adb_wireless;
-                                  exit 0;
                                   ;;
        -we  | --wireless-enable)  adb_wireless_enable;
+                                  exit 0;
                                   ;;
        -dis | --disconnect)       adb_disconnect;
                                   exit 0;
@@ -665,7 +667,7 @@ function main()
                                   ;;
         -s | --substratum)        enable_substratum_andromeda;
                                   ;;
-          * )                     printf "\n${BLUE}Invalid argument(s). See usage below.${NC}\n"
+          * )                     printf "\n${YELLOW}Invalid argument(s). See usage below.${NC}\n"
                                   usage;
                                   exit 1;
                                   ;;
