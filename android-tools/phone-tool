@@ -573,6 +573,7 @@ function enable_substratum_andromeda()
   #Credits:[projekt.] development team
   local package_path # path where andromeda is installed
   local kill_list # processes to be kiled (if server is already running)
+  device_init;
   unset bool_is_installed; #clear the variable
   printf "${BLUE}Andromeda Start Shell Script${NC}\n"
   line_fill;
