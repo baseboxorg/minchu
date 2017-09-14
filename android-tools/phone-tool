@@ -400,9 +400,10 @@ function backup_all()
   #Expects: Nothing but disk space and a device.
   #check if device is connected.
 	device_init
-
+  local device_name
+  device_name=$(adb shell getprop ro.product.model)
   printf "\n${YELLOW}Backing up App data, APKs in current directory...${NC}\n"
-	adb backup -apk -all -nosystem -f "ADB-BACKUP-${DEVICE_NAME}-${DATE}.ab"
+	adb backup -apk -all -nosystem -f "ADB-BACKUP-${device_name}-${DATE}.ab"
   line_fill;
   return 0;
 }
