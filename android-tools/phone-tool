@@ -624,42 +624,77 @@ function after_reboot_items()
   done
 }
 
+function projekt_script()
+{
+echo ""
+read -n 1 -s -r -p "Press any key to continue..."
+echo ""
+echo ""
+
+# Get the current directory of the device running this script
+#ROOT=$(which adb)
+
+
+# Device configuration of the testing rack
+ADB="adb shell"
+
+# Let's first grab the location where Andromeda is installed
+pkg=$($ADB pm path projekt.andromeda)
+echo "$pkg"
+
+# Due to the way the output is formatted, we have to strip 10 chars at the start
+pkg=$(echo $pkg | cut -d : -f 2 | sed s/\\r//g)
+
+# Now let's kill the running Andromeda services on the mobile device
+kill=$($ADB pidof andromeda)
+
+# Check if we need to kill the existing pids, then kill them if need be
+if [[ "$kill" == "" ]]
+then echo
+$ADB << EOF
+am force-stop projekt.substratum
+appops set projekt.andromeda RUN_IN_BACKGROUND allow
+appops set projekt.substratum RUN_IN_BACKGROUND allow
+CLASSPATH=$pkg app_process /system/bin --nice-name=andromeda projekt.andromeda.Andromeda &
+echo "You can now remove your device from the computer!"
+exit
+EOF
+else echo
+$ADB << EOF
+am force-stop projekt.substratum
+kill -9 $kill
+appops set projekt.andromeda RUN_IN_BACKGROUND allow
+appops set projekt.substratum RUN_IN_BACKGROUND allow
+CLASSPATH=$pkg app_process /system/bin --nice-name=andromeda projekt.andromeda.Andromeda &
+echo "You can now remove your device from the computer!"
+exit
+EOF
+fi
+
+# We're done!
+adb kill-server
+}
+
 function enable_substratum_andromeda()
 {
   #Function to start andromeda server on device
   #Input arguments: None Output: None.
   #Credits:[projekt.] development team
-  local package_path # path where andromeda is installed
-  local kill_list # processes to be kiled (if server is already running)
+  local pkg # path where andromeda is installed
+  local kill # processes to be kiled (if server is already running)
   device_init;
   unset bool_is_installed; #clear the variable
-  printf "${BLUE}Andromeda Start Shell Script${NC}\n"
+  printf "${BLUE}Andromeda Start Shell Script by [Projekt.]${NC}\n"
   line_fill;
   check_sdk "26" "26"
   printf "Checking if Andromeda app is installed.....\n"
   check_if_installed "${ANDROMEDA}"
   #bool_is_installed=false #testing only
   if [ "$bool_is_installed" == "true" ]; then
-      package_path=$(adb shell pm path projekt.andromeda | cut -d : -f 2 | sed s/\\r//g)
-      kill_list=$(adb shell pidof andromeda-server)
-      # Check if we need to kill the existing pids, then kill them if needed
-      if [[ "${kill_list}" = "" ]]; then
-        printf "Granting permissions to run in Background\n"
-        adb shell am force-stop projekt.substratum
-        adb shell appops set "${ANDROMEDA}" RUN_IN_BACKGROUND allow
-        adb shell appops set "${SUBSTRATUM}" RUN_IN_BACKGROUND allow
-        adb shell CLASSPATH="${package_path}" app_process /system/bin --nice-name=andromeda-server projekt.andromeda.Andromeda &
-      else
-        adb shell am force-stop projekt.substratum
-        adb shell kill -9 "${kill_list}"
-        adb shell appops set "${ANDROMEDA}" RUN_IN_BACKGROUND allow
-        adb shell appops set "${SUBSTRATUM}" RUN_IN_BACKGROUND allow
-        adb shell CLASSPATH="${package_path}" app_process /system/bin --nice-name=andromeda-server projekt.andromeda.Andromeda &
-      fi
-      adb kill-server 2>&1;
+      projekt_script;
       printf "${BLUE}Enjoy Substratum+Andromeda on your device\n${NC}"
   else
-    printf "${YELLOW}Opps! Andromeda is not Installed${NC}\nPlease visit:${BLUE} https://play.google.com/store/apps/details?id=projekt.andromeda ${NC}to install Andromeda.\n"
+      printf "${YELLOW}Opps! Andromeda is not Installed${NC}\nPlease visit:${BLUE} https://play.google.com/store/apps/details?id=projekt.andromeda ${NC}to install Andromeda.\n"
   fi
   unset bool_is_installed;
   line_fill;
