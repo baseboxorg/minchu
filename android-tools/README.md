@@ -3,7 +3,7 @@
 
 ### Requirements
 * Bash v4.4 and above
-* Android Jellybean and above.
+* Android Lollipop 5.1 and above.
 * Latest version of adb and fastboot installed properly and are in your **$PATH**.
 * udev rules are properly set for your device/manufacturer.
 ADB debugging enabled and your pc is trusted.
@@ -40,13 +40,18 @@ I have not verified the restore operations with backups created using this scrip
  [-o  --ota]         [Sideload OTA ZIP and exit]
  [-p  --permissions] [Grant special permissions via adb for certain apps]
  [-r  --restore]     [Restore app data in .ab files in current folder]
- [-s --substratum]   [Enable Andromeda add-on server for Substratum]
- [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
  [-w  --wireless]    [connect to adb wirelessly]
  [-we --wireless-enable] [Enable adb wireless on device]
+ ```
+For android 8.0 and above
+ ```
+ [-s --substratum]   [Enable Andromeda add-on server for Substratum]
+ [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
  [-uo --unistall-overlays] [Uninstall system overlays for systemui, settings and core android packages]
  [-ut <theme name> ] [Uninstall theme]
-
+```
+For help and Version info
+```
  [-h --help]        [Display this message]
  [-v --version]     [Display script verion and exit]"
  ```

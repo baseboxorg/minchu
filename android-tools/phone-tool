@@ -6,7 +6,7 @@
 # Licence: MIT
 # Github Repository: https://github.com/tprasadtp/minchu
 # Requirements - Bash v4.4 and above
-#              - Android Jellybean and above.
+#              - Android 5.1 and above.
 #              - latest version of adb and fastboot installed properly and are in your $PATH.
 #              - udev rules are properly set for your device/manufacturer.
 #              - ADB debugging enabled and your pc is trusted. (duh!)
@@ -87,6 +87,10 @@ WHITELIST_OVERLY[2]=com.google.android.theme.pixel #Pixel theme (Not compiled fr
 #Other Constants
 ANDROID_IP=192.168.0.101
 PORT=7667
+MORE_THAN_ONE_DEVICE="error: more than one device/emulator"
+NO_DEVICE_FOUND="error: no devices/emulators found"
+NO_DEVICE_CONNECTED="List of devices attached"
+
 #DOTFILE_DIR="Dotfiles"
 
 
@@ -136,13 +140,19 @@ echo "Usage: ${YELLOW}${SCRIPT}${NC}\
   [-o  --ota]         [Sideload OTA ZIP and exit]
   [-p  --permissions] [Grant special permissions via adb for cetrain apps]
   [-r  --restore]     [Restore app data in .ab files in current folder]
-  [-s  --substratum]  [Enable Andromeda add-on server for Substratum]
-  [-t  --theme]       [List Overlays and enter adb shell ode to choose overlays]
-  [-uso]              [Unistall Overlays belonging to SystemUI, Settings
-                       and Android]
   [-w  --wireless]    [connect to adb wirelessly]
   [-we --wl-enable]   [Enable adb wireless on device]
+  ${YELLOW}
+  -------------------- ANDROID 8.0 & ABOVE ONLY -------------------
+  ${NC}
+  [-s  --substratum]  [Enable Andromeda add-on server for Substratum]
+  [-t  --theme]       [List Overlays and enter adb shell  to choose overlays]
+  [-uso]              [Unistall Overlays belonging to SystemUI, Settings
+                       and Android]
   [-ut <theme name>]  [Uninstall theme]
+  ${YELLOW}
+  -------------------- HELP & VERSION INFO ------------------------
+  ${NC}
   [-h --help]         [Display this message]
   [-v --version]      [Display script verion and exit]"
 printf "\nNotice any bugs? Please report it. \
@@ -169,7 +179,7 @@ function check_if_installed()
 	if adb shell pm list packages | grep -qFx package:"${1}"; then
     		printf "%-30s: %+9s\n" "${1}" "${BLUE}INSTALLED${NC}"
 		bool_is_installed=true
-	else
+  else
     		printf "%-30s: %+9s\n" "${1}" "${YELLOW}NOT FOUND${NC}"
 		bool_is_installed=false
 	fi
@@ -179,17 +189,71 @@ function check_if_installed()
 function device_init()
 {
   #Function that waits for adb and shouts what is connected
-  #Input:None Output:Device details if connected
-  printf "${BLUE}Waiting for Device...${NC}\n"
-	adb wait-for-device
-	local DEVICE_NAME
-  DEVICE_NAME=$(adb shell getprop ro.product.model)
-	#local DEVICE_SERIAL
-  #DEVICE_SERIAL=$(adb shell getprop ro.serialno)
-	printf "${DEVICE_NAME} is Connected!\n"
+  #Also checks if multiple devices are connected and if true, exits the script
+  #Input:None Output: Device details if connected
+  local adb_found #Output of adb
+  local adb_multidev_check #Output of adb shell if multiple devices are connected gives an error
+  local device_name #name of the device
+  adb_found=$(adb devices | tail -2 | head -1 | cut -f 1 | sed 's/ *$//g')
+  line_fill;
+  # Check if no devices are connected, if true, wait for device
+  if [ "${adb_found}" == "${NO_DEVICE_CONNECTED}" ]; then
+    printf "No Android Devices/Emulators found. Have you enabled ADB on your device?\n"
+    printf "${BLUE}Waiting for Device...${NC}\n"
+    adb wait-for-device
+  fi
+  #Check if multiple devices are connected if true, exit the script
+  adb_multidev_check=$(adb shell getprop ro.product.model 2>&1)
+  if [ "$adb_multidev_check" == "$MORE_THAN_ONE_DEVICE" ]; then
+      printf "${YELLOW}ERROR: More than one device or emulator is connected!\n${NC}Script cannot continue!!\n"
+      exit 1;
+  elif [ "$adb_multidev_check" == "$NO_DEVICE_FOUND" ];then
+    printf "No Android Devices/Emulators found. Have you enabled ADB on your device?\n"
+    printf "${BLUE}Waiting for Device...${NC}\n"
+    adb wait-for-device
+  fi
+  device_name=$(adb shell getprop ro.product.model)
+	printf "${device_name} is Connected!\n"
   line_fill;
 }
 
+function check_sdk()
+{
+  #Function to  Check if SDK version is between the specified versions
+  #Arguments: Two integers with min and max sdk numbers respectively in that order.
+  #Should be used after device_init function to avoid conflicts/errors with multiple devices
+  #ARG1:min_sdk_version (required)
+  #ARG2:max_sdk_version (optional)
+  #Output Exit the script if ro.build.version.sdk  is not within bounds specified
+  #NOTE: THIS CHECK WILL FAIL FOR ANDROID PREVIEW RELEASES WHICH HAVE SDK VERSION IN LETTERS
+  local min_sdk_version="$1"
+  local max_sdk_version="$2"
+  local device_sdk_version
+  if [ $# -eq 0 ]; then
+    printf "Error Not enough arguments to check SDK bounds\n"
+    exit 500;
+  fi
+
+  device_sdk_version=$(adb shell getprop ro.build.version.sdk)
+  #If only one argument is specified its min sdk version
+  if [ $# -eq 1 ]; then
+    #check for min sdk
+    if [ "$device_sdk_version" -lt "$min_sdk_version" ]
+     then
+      printf "${YELLOW}ERROR : Your Device does not support this feature.\n${NC}"
+      exit 403;
+    fi
+  #If two arguments are specified then check for max sdk as well
+  elif [ $# -eq 2 ]; then
+    #check for min and max sdk
+    if [ "$device_sdk_version" -lt "$min_sdk_version" ] || [ "$device_sdk_version" -gt "$max_sdk_version" ]
+     then
+      printf "${YELLOW}ERROR : Your Drevice does not support the required feature\n${NC}"
+      exit 403;
+    fi
+  fi
+
+}
 
 function device_check()
 {
@@ -197,22 +261,12 @@ function device_check()
   #Input: None
   #Output: Device name, model, serial number and other details
   #Expects: single adb device or none to be connected.
-  local NOT_CONNECTED="List of devices attached"
-  local ADB_FOUND
-  ADB_FOUND=$(adb devices | tail -2 | head -1 | cut -f 1 | sed 's/ *$//g')
-  line_fill;
-  if [[ ${ADB_FOUND} == "${NOT_CONNECTED}" ]]; then
-    printf "No Android Devices/Emulators found. Have you enabled ADB on your device?\n"
-    line_fill;
-    return 1
-  else
-    local DEVICE_NAME
-    DEVICE_NAME=$(adb shell getprop ro.product.model)
-    printf "${YELLOW}Properties for connected ${DEVICE_NAME}:\n${NC}"
+    device_init;
+    local device_name
+    device_name=$(adb shell getprop ro.product.model)
+    printf "${YELLOW}Properties for connected ${device_name}:\n${NC}"
     adb shell getprop | grep "model\|version.sdk\|manufacturer\|hardware\|platform\|revision\|serialno\|product.name\|brand\|bootloader\|ro.vendor.build.fingerprint\|ro.vendor.build.date\|sys.oem_unlock_allowed"
-    line_fill
-    return 0
-  fi
+    line_fill;
 }
 
 function restore_app_data()
@@ -300,7 +354,7 @@ function set_permissions_cmd()
   local APP_NAME="${2}"
   shift 2;
   check_if_installed "${PACKAGE_NAME}"
-  if [[ "$bool_is_installed" == "true" ]]
+  if [ "$bool_is_installed" == "true" ]
       then
       printf "\n%-50s: %-30s\n" "Granting Permissions to" "${YELLOW}${APP_NAME}${NC}"
       for permissions_arg in "$@"
@@ -420,14 +474,15 @@ function enable_brevent()
 {
   # Enable brevent server on phone
   device_init;
+  printf "${BLUE}Enabling Brevent${NC}\n"
   unset bool_is_installed;
   check_if_installed "${BREVENT}"
-  if [[ "$bool_is_installed" == "true" ]]; then
+  if [ "$bool_is_installed" == "true" ]; then
       printf "\n${BLUE}Enabling Brevent Server....\n${NC}"
       adb shell sh /data/data/${BREVENT}/brevent.sh
       printf "\n${BLUE}Enjoy Brevent on your device\n${NC}"
   else
-    printf "\n${YELLOW}Brevent not Installed${NC}\n"
+    printf "\n${YELLOW}Brevent is not Installed${NC}\n"
   fi
   unset bool_is_installed;
   line_fill;
@@ -438,7 +493,7 @@ function adb_wireless()
 {
   #connect adb wireless on phone
   local adb_connect_result
-  adb_connect_result=$(adb connect ${ANDROID_IP}:${PORT} | cut -f 1 -d " ")
+  adb_connect_result=$(adb connect ${ANDROID_IP}:${PORT} | cut -f 1 -d " "  2>&1 )
   #echo $adb_connect_res
   if [ "${adb_connect_result}" == "connected" ]; then
     printf "${BLUE}Connected to device at ${ANDROID_IP} on port ${PORT}\n${NC}"
@@ -475,6 +530,7 @@ function uninstall_system_overlays()
   # List installed overlays and write ato a tmp directory and unistall them
   # Systemui
    device_init;
+   check_sdk "26" "26"
    mkdir -p /tmp/overlay-list
    adb shell pm list packages | grep  package:com.android.systemui. | cut -d ":" -f 2 > /tmp/overlay-list/systemui-overlay.txt
    uninstall_ovelays_by_package "/tmp/overlay-list/systemui-overlay.txt" "SYSTEMUI"
@@ -497,6 +553,8 @@ function uninstall_overlays_by_theme()
   # CompactUI Should be argument. (case sensitive)
   # Output: none
   local theme_name=${1}
+  device_init
+  check_sdk "26" "26"
   if [ "${theme_name}" == "" ]; then
           printf "${BLUE}Not enough arguments found. \n${NC}"
           line_fill;
@@ -561,7 +619,7 @@ function after_reboot_items()
   while true; do
     read -n 1 -r -p "Have you disconnected the USB cable?" yn
     case $yn in
-    [Yy]* )  adb_disconnect; adb_wireless; enable_brevent;enable_substratum_andromeda;break;;
+    [Yy]* )  echo ""; adb_disconnect; adb_wireless; enable_brevent;enable_substratum_andromeda;break;;
     esac
   done
 }
@@ -577,21 +635,28 @@ function enable_substratum_andromeda()
   unset bool_is_installed; #clear the variable
   printf "${BLUE}Andromeda Start Shell Script${NC}\n"
   line_fill;
+  check_sdk "26" "26"
   printf "Checking if Andromeda app is installed.....\n"
   check_if_installed "${ANDROMEDA}"
   #bool_is_installed=false #testing only
-  if [[ "$bool_is_installed" == "true" ]]; then
+  if [ "$bool_is_installed" == "true" ]; then
       package_path=$(adb shell pm path projekt.andromeda | cut -d : -f 2 | sed s/\\r//g)
       kill_list=$(adb shell pidof andromeda-server)
       # Check if we need to kill the existing pids, then kill them if needed
-      if [[ "${kill_list}" != "" ]]; then
-        printf "Killing already running andromeda server with pid : %s\n" "${YELLOW}$kill_list${NC}"
-        adb shell kill -9 ${kill_list}
+      if [[ "${kill_list}" = "" ]]; then
+        printf "Granting permissions to run in Background\n"
+        adb shell am force-stop projekt.substratum
+        adb shell appops set "${ANDROMEDA}" RUN_IN_BACKGROUND allow
+        adb shell appops set "${SUBSTRATUM}" RUN_IN_BACKGROUND allow
+        adb shell CLASSPATH="${package_path}" app_process /system/bin --nice-name=andromeda-server projekt.andromeda.Andromeda &
+      else
+        adb shell am force-stop projekt.substratum
+        adb shell kill -9 "${kill_list}"
+        adb shell appops set "${ANDROMEDA}" RUN_IN_BACKGROUND allow
+        adb shell appops set "${SUBSTRATUM}" RUN_IN_BACKGROUND allow
+        adb shell CLASSPATH="${package_path}" app_process /system/bin --nice-name=andromeda-server projekt.andromeda.Andromeda &
       fi
-      printf "Granting permissions to run in Background\n"
-      adb shell appops set ${ANDROMEDA} RUN_IN_BACKGROUND allow
-      adb shell appops set ${SUBSTRATUM} RUN_IN_BACKGROUND allow
-      adb shell CLASSPATH=${package_path} app_process /system/bin --nice-name=andromeda-server projekt.andromeda.Andromeda &
+      adb kill-server 2>&1;
       printf "${BLUE}Enjoy Substratum+Andromeda on your device\n${NC}"
   else
     printf "${YELLOW}Opps! Andromeda is not Installed${NC}\nPlease visit:${BLUE} https://play.google.com/store/apps/details?id=projekt.andromeda ${NC}to install Andromeda.\n"
@@ -612,7 +677,7 @@ function main()
 
 # check for adb
   if [ "$(which adb)" == "" ]; then
-    printf "\n${YELLOW}No adb binaries found in syetem path.\n This Script cannot continue\n${NC}"
+    printf "\n${YELLOW}No adb binaries found in system path.\n This Script cannot continue\n${NC}"
     exit 2;
   fi
 
